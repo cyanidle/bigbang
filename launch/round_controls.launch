@@ -1,0 +1,34 @@
+<launch>
+    <arg name="debug" default="false"/>
+    <arg name="use_own_params" default="true"/>
+    <arg name="scripts_file" default="scripts"/>
+    <arg name="route_file" default="blue"/>
+    <arg name="launch_scripts" default="true"/>
+    <arg name="launch_tasks" default="true"/>
+    <arg name="allow_debug_complete" default="false"/>
+    <arg name="robot_name" default="biba"/>
+
+    <group if="$(arg use_own_params)">
+        <rosparam file="$(find bigbang_eurobot)/config/$(arg robot_name)/controls.yaml"/>
+    </group>
+
+
+    <group if="$(arg launch_tasks)">  
+    <node pkg="bigbang_eurobot" type="task_manager.py" name="task_manager" output="screen" respawn="true" respawn_delay="1"> 
+        <param name = "debug" value = "$(arg debug)"/>
+        <param name="allow_debug_connect" value = "false"/>
+        <param name = "file" value = "$(find bigbang_eurobot)/config/routes/$(arg robot_name)/$(arg route_file).yaml"/>
+    </node>
+    </group>
+
+
+    <group if="$(arg launch_scripts)">  
+    <node pkg="bigbang_eurobot" type="scripts_executor.py" name="scripts_executor" output="screen" respawn="true" respawn_delay="1"> 
+        <param name = "debug" value = "$(arg debug)"/>
+        <param name="allow_debug_connect" value = "false"/>
+        <param name="allow_debug_complete" value="$(arg allow_debug_complete)"/>
+        <param name = "file" value = "$(find bigbang_eurobot)/config/$(arg robot_name)/$(arg scripts_file).yaml"/>
+    </node>
+    </group>
+
+</launch>

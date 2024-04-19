@@ -1,0 +1,122 @@
+<launch>
+    <arg name="debug" default="false"/>
+    <arg name="robot_name" default="biba"/>
+    <arg name="lidar_debug" default="false"/>
+    <arg name="use_own_params" default="true"/>
+    <arg name="arduino_connected" default="true"/>
+    <arg name="lidar_connected" default="true"/>
+    <arg name="arduino_baud" default="57600"/>
+    <arg name="port" default="/dev/ttyACM0"/>
+    <arg name="launch_monte_carlo" default="true"/>
+    <arg name="launch_global_planer" default="true"/>
+    <arg name="launch_local_planer" default="true"/>
+    <arg name="launch_costmap" default="true"/>
+    <arg name="launch_rviz" default="false"/>
+    <arg name="lidar_test_mode" default="false"/>
+    <arg name="launch_scripts" default="true"/>
+    <arg name="launch_interconnect" default="true"/>
+    <arg name="launch_tasks" default="true"/>
+    <arg name="launch_web_params" default="false"/>
+    <arg name="rviz_source_of_robot_pos" default="filtered_pos"/>
+    <arg name="scripts_file" default="scripts"/>
+    <arg name="route_file" default="blue"/>
+    <arg name="start_x" default="1"/>
+    <arg name="start_y" default="1"/>
+    <arg name="start_theta" default="0"/>
+    <arg name="launch_gui" default="true"/>
+    <arg name="round_side" default="blue"/>
+    <arg name="allow_debug_complete" default="false"/>
+<rosparam param="robot_name">$(arg robot_name)</rosparam>
+<group if="$(arg launch_rviz)">  
+<include file="$(find bigbang_eurobot)/launch/rviz.launch">
+    <arg name="source_of_robot_pos" value="$(arg rviz_source_of_robot_pos)"/>
+</include>
+</group>
+
+<group if="$(arg launch_web_params)">  
+<include file="$(find bigbang_eurobot)/launch/web_params.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+</include>
+</group>
+
+<include file="$(find bigbang_eurobot)/launch/round_controls.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="allow_debug_complete" value="$(arg allow_debug_complete)"/>
+    <arg name="use_own_params" value="$(arg use_own_params)"/>
+    <arg name="launch_scripts" default="$(arg launch_scripts)"/>
+    <arg name="launch_tasks" default="$(arg launch_tasks)"/>
+    <arg name="scripts_file" default="$(arg scripts_file)"/>
+    <arg name="route_file" default="$(arg route_file)"/>
+</include>
+
+<include file="$(find bigbang_eurobot)/launch/arduino.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="use_own_params" value="$(arg use_own_params)"/>
+    <arg name="port" default="$(arg port)"/>
+    <arg name="arduino_baud" default="$(arg arduino_baud)"/>
+    <arg name="arduino_connected" default="$(arg arduino_connected)"/>
+</include>
+
+<group if="$(arg launch_costmap)">    
+<include file="$(find bigbang_eurobot)/launch/costmap.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="use_own_params" value="$(arg use_own_params)"/>
+    <arg name="debug" value="$(arg debug)"/>
+</include>
+</group>
+
+<group if="$(arg launch_global_planer)">
+<include file="$(find bigbang_eurobot)/launch/global_planer.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="use_own_params" value="$(arg use_own_params)"/>
+    <arg name="debug" value="$(arg debug)"/>
+</include>
+</group>
+
+<group if="$(arg launch_local_planer)">
+<include file="$(find bigbang_eurobot)/launch/local_planer.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="use_own_params" value="$(arg use_own_params)"/>
+    <arg name="debug" value="$(arg debug)"/>
+</include>
+</group>
+
+<group if="$(arg lidar_connected)">
+  <include file="$(find bigbang_eurobot)/launch/lidar.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+      <arg name="use_own_params" value="$(arg use_own_params)"/>
+      <arg name="debug" value="$(arg lidar_debug)"/>
+      <arg name="round_side" value="$(arg round_side)"/>
+      <arg name="lidar_test_mode" value="$(arg lidar_test_mode)"/>
+  </include>
+</group>
+
+<group if="$(arg launch_monte_carlo)">
+<include file="$(find bigbang_eurobot)/launch/monte_carlo.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="use_own_params" value="$(arg use_own_params)"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="start_x" value="$(arg start_x)"/>
+    <arg name="start_y" value="$(arg start_y)"/>
+    <arg name="start_theta" value="$(arg start_theta)"/>
+  </include>
+</group>
+
+<group if="$(arg launch_interconnect)">
+<include file="$(find bigbang_eurobot)/launch/interconnect.launch">
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="use_own_params" value="$(arg use_own_params)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+</group>
+
+<group if="$(arg launch_gui)">
+    <node pkg="bigbang_eurobot" type="gui.py" name="gui" output="screen" respawn="false"> 
+        <param name = "debug" value = "$(arg debug)"/>
+        <param name = "allow_debug_connect" value = "false"/>
+    </node>
+</group>
+
+</launch>

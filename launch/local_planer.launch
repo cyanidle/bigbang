@@ -1,0 +1,16 @@
+<launch>
+    <arg name="debug" default="false"/>
+    <arg name="use_own_params" default="true"/>
+    <arg name="robot_name" default="biba"/>
+
+    <group if="$(arg use_own_params)">
+        <rosparam file="$(find bigbang_eurobot)/config/$(arg robot_name)/local_planer.yaml"/>
+    </group>
+
+    <node pkg="bigbang_eurobot" type="local_planer.py" name="local_planer" output="screen" respawn="true" respawn_delay="1"> 
+        <param name = "debug" value = "$(arg debug)"/>
+        <param name="allow_debug_connect" value = "false"/>
+        <param name = "params_file" value = "$(find bigbang_eurobot)/config/local_planer.yaml"/>
+    </node>
+
+</launch>

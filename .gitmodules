@@ -1,0 +1,3 @@
+[submodule "submodule/describe"]
+	path = submodule/describe
+	url = https://github.com/cyanidle/describe.git

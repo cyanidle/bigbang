@@ -1,0 +1,16 @@
+<launch>
+    <arg name="debug" default="false"/>
+    <arg name="use_own_params" default="true"/>
+    <arg name="robot_name" default="biba"/>
+
+    <group if="$(arg use_own_params)">
+        <rosparam file="$(find bigbang_eurobot)/config/$(arg robot_name)/costmap.yaml"/>
+    </group>
+
+    <node pkg="bigbang_eurobot" type="costmap_server" name="costmap_server" output="screen" respawn="true" respawn_delay="1"> 
+        <param name = "debug" value = "$(arg debug)"/>
+        <param name = "image_path" value = "$(find bigbang_eurobot)/config/costmap.png"/>
+        <param name = "params_file" value = "$(find bigbang_eurobot)/config/costmap.yaml"/>
+    </node>
+
+</launch>

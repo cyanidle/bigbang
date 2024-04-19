@@ -1,0 +1,9 @@
+<launch>
+  <arg name="source_of_robot_pos" default="filtered_pos"/>
+  <include file="$(find bigbang_eurobot)/launch/robot_model.launch">
+    <arg name="source_of_robot_pos" default="$(arg source_of_robot_pos)"/>
+  </include>
+  
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find bigbang_eurobot)/config/bigbang.rviz" output="log"/>
+
+</launch>

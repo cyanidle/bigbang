@@ -1,0 +1,15 @@
+<launch>
+    <arg name="launch_rviz" default="false"/>
+    <arg name="allow_debug_complete" default="false"/>
+<include file="$(find bigbang_eurobot)/launch/move_base.launch">
+    <arg name="route_file" default="blue"/>
+    <arg name="round_side" default="green"/>
+    <arg name="robot_name" default="boba"/>
+    <arg name="allow_debug_complete" value="$(arg allow_debug_complete)"/>
+    <arg name="start_x" value="1.8"/>
+    <arg name="start_y" value="1.875"/>
+    <arg name="launch_rviz" value="$(arg launch_rviz)"/>
+    <arg name="start_theta" value="1.047"/>
+    <arg name="port" value="/dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0"/>
+</include>
+</launch>

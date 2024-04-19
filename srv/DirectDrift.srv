@@ -1,0 +1,9 @@
+float32 center_x
+float32 center_y
+float32 radians
+bool dont_keep_relative_theta
+bool left = 0
+bool right = 1
+bool direction
+---
+bool status
