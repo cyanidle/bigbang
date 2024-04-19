@@ -3,34 +3,35 @@
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "rplidar_utils.h"
+#include "describe/describe.hpp"
 
-struct ShapeDetection : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(float, dist_margin, 0.05) //0.05
-    SERIAL_FIELD(int, min_count, 3)
+struct ShapeDetection {
+    float dist_margin = 0.05; //0.05
+    int min_count = 3;
 };
+DESCRIBE(ShapeDetection, &_::dist_margin, &_::min_count)
 
-struct SimpleDetection : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(float, dist_margin, 0.15)
+struct SimpleDetection {
+    float dist_margin = 0.15;
 };
+DESCRIBE(SimpleDetection, &_::dist_margin)
 
-struct BeaconsParams : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(float, time_before_global, 1)
-    SERIAL_FIELD(float, time_for_global, 3)
-    SERIAL_FIELD(float, min_size, 0.035)
-    SERIAL_FIELD(float, max_size, 0.1)
-    SERIAL_CONTAINER(QList, float, all_shimmering_hz, {0.5f, 1.f, 1.5f})
-
-    SERIAL_CONTAINER(QList, float, all_poses_x, {0, 2, 2})
-    SERIAL_CONTAINER(QList, float, all_poses_y, {1.5, 3, 0})
-    SERIAL_NEST(SimpleDetection, simple, DEFAULT)
-    SERIAL_NEST(ShapeDetection, shape, DEFAULT)
+struct BeaconsParams {
+    float time_before_global = 1;
+    float time_for_global = 3;
+    float min_size = 0.035;
+    float max_size = 0.1;
+    std::vector<float> all_shimmering_hz = {0.5f, 1.f, 1.5f};
+    std::vector<float> all_poses_x = {0, 2, 2};
+    std::vector<float> all_poses_y = {1.5, 3, 0};
+    SimpleDetection simple;
+    ShapeDetection shape;
 };
+DESCRIBE(BeaconsParams, 
+    &_::time_before_global, &_::time_for_global, &_::min_size,
+    &_::max_size, &_::all_shimmering_hz, &_::all_poses_x,
+    &_::all_poses_y, &_::simple, &_::shape)
+
 struct BeaconsShape {
     BeaconsShape() = default;
     BeaconsShape(const std::vector<LaserBeacon> &beacons, const BeaconsParams& params) :

@@ -1,4 +1,4 @@
-#include "bigbang/nodes/monte_carlo.h"
+#include "monte_carlo/monte_carlo.hpp"
 #define MAX_UNC m_params.max_uncertainty
 #define MAX_UNC_9   MAX_UNC, 0, 0, \
                     0, MAX_UNC, 0, \

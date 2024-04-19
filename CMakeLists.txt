@@ -10,6 +10,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 add_subdirectory(submodule/describe)
+add_subdirectory(submodule/pcg)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib
@@ -92,14 +93,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC -Wno-sign-compare")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pthread")
 set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS}")
 set(CMAKE_AUTOMOC ON)
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${Qt5Core_INCLUDE_DIRS}
-  ${OpenCV_INCLUDE_DIRS}
-  ${bigbang_lidar_sdk_INCLUDE_DIRS}
-  ${radapter_broker_INCLUDE_DIRS}
-)
 
 add_library(Types STATIC
   include/bigbang/types/coord.hpp
@@ -108,11 +101,17 @@ add_library(Types STATIC
   include/bigbang/types/rosparams.cpp
   include/bigbang/types/serializer.hpp #needs to be added, so moc gets linked
 )
+target_include_directories(Types PUBLIC
+  ${CMAKE_SOURCE_DIR}/include
+  ${catkin_INCLUDE_DIRS}
+  ${Qt5Core_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${radapter_broker_INCLUDE_DIRS}
+)
 target_link_libraries(Types PUBLIC
+  describe pcg
   ${catkin_LIBRARIES}
 )
-
-# Node code should be static, I guess
 add_library(nodebase STATIC
   include/bigbang/nodes/nodebase.cpp
 )

@@ -3,6 +3,6 @@
 FROM ros:noetic AS core
 
 RUN apt-get update && apt-get install -q -y \
-    ros-noetic-desktop-full \
+    ros-noetic-desktop \
     && rm -rf /var/lib/apt/lists/*
 

@@ -11,26 +11,18 @@
 #include <geometry_msgs/PointStamped.h>
 #include <bigbang_eurobot/MapObject.h>
 
-Q_DECLARE_TYPEINFO(bigbang_eurobot::MapObject, Q_MOVABLE_TYPE);
-
-struct CostmapTopics : public RosParams
-{
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(QString, costmap_pub, "costmap")
-    SERIAL_FIELD(QString, objects_sub, "obstacles")
-    SERIAL_FIELD(QString, rviz_points, "/clicked_point")
-    SERIAL_FIELD(QString, frame_id, "map")
-    SERIAL_FIELD(QString, child_frame_id, "costmap")
+struct CostmapTopics {
+    std::string costmap_pub = "costmap";
+    std::string objects_sub = "obstacles";
+    std::string rviz_points = "/clicked_point";
+    std::string frame_id = "map";
+    std::string child_frame_id = "costmap";
 };
 
-struct CostmapParams : public RosParams
-{
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(int, width, 101)
-    SERIAL_FIELD(int, height, 151)
-    SERIAL_FIELD(float, resolution, 0.02f) // m per side of pixel
+struct CostmapParams {
+    int width = 101;
+    int height = 151;
+    float resolution = 0.02f; // m per side of pixel
 };
 
 struct CostmapServerParams : public RosParams

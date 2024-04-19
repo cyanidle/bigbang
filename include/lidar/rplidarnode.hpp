@@ -19,61 +19,64 @@
 
 #define MAX_NODES 8192UL
 
-struct LidarTopics : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(QString, base_frame_id, "costmap")
-    SERIAL_FIELD(QString, frame_id, "filtered_pos")
-    SERIAL_FIELD(QString, child_frame_id, "laser")
-    SERIAL_FIELD(QString, position_sub, "filtered_pos")
-    SERIAL_FIELD(QString, monte_carlo_sub, "monte_carlo_state")
-    SERIAL_FIELD(QString, move_sub, "filtered_move")
-    SERIAL_FIELD(QString, laser_pub, "scan")
-    SERIAL_FIELD(QString, objects_pub, "obstacles")
-    SERIAL_FIELD(QString, beacons_pub, "laser_beacons")
-    SERIAL_FIELD(QString, closest_obj_pub, "closest_object")
+struct LidarTopics {
+    std::string base_frame_id = {"costmap"};
+    std::string frame_id = {"filtered_pos"};
+    std::string child_frame_id = {"laser"};
+    std::string position_sub = {"filtered_pos"};
+    std::string monte_carlo_sub = {"monte_carlo_state"};
+    std::string move_sub = {"filtered_move"};
+    std::string laser_pub = {"scan"};
+    std::string objects_pub = {"obstacles"};
+    std::string beacons_pub = {"laser_beacons"};
+    std::string closest_obj_pub = {"closest_object"};
 };
+DESCRIBE(LidarTopics, 
+    &_::base_frame_id, &_::frame_id, &_::child_frame_id,
+    &_::position_sub, &_::monte_carlo_sub, &_::move_sub,
+    &_::laser_pub, &_::objects_pub, &_::beacons_pub, &_::closest_obj_pub)
 
-struct NetworkParams : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(QString, host, "192.168.1.25")
-    SERIAL_FIELD(int, port, 20108)
-    SERIAL_FIELD(bool, use_tcp, true)
-
+struct NetworkParams {
+    std::string host = "192.168.1.25";
+    int port = 20108;
+    bool use_tcp = true;
 };
+DESCRIBE(NetworkParams, &_::host, &_::port, &_::use_tcp)
 
-struct SerialParams : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(int, baudrate, 256400)
-    SERIAL_FIELD(QString, port, "/dev/ttyUSB0")
+struct SerialParams {
+    int baudrate = 256400;
+    std::string port = "/dev/ttyUSB0";
 };
+DESCRIBE(SerialParams, &_::baudrate, &_::port)
 
-struct LidarParams : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(bool, test_mode, false)
-    SERIAL_FIELD(bool, enable_beacons, true)
-    SERIAL_FIELD(bool, send_scans, true)
-    SERIAL_FIELD(bool, grab_with_interval, false)
-    SERIAL_FIELD(bool, use_serial, true)
-    SERIAL_FIELD(bool, reversed, true) // if scan comes clockwise - it is reversed
-    SERIAL_FIELD(double, scan_frequency, 10)
-    SERIAL_FIELD(float, range_min, 0.15)
-    SERIAL_FIELD(float, range_max, 40)
-    SERIAL_FIELD(float, lidar_offset, 0)
-    SERIAL_FIELD(float, lidar_x_offset, 0)
-    SERIAL_FIELD(float, lidar_y_offset, 0)
-    SERIAL_FIELD(float, range_correction, 0)
-    SERIAL_FIELD(int, source_id, 0)
-    SERIAL_FIELD(QString, scan_mode, "DenseBoost")
-    SERIAL_NEST(ObjectDetection, objects, DEFAULT)
-    SERIAL_NEST(BeaconsParams, beacons, DEFAULT)
-    SERIAL_NEST(NetworkParams, network, DEFAULT)
-    SERIAL_NEST(SerialParams, serial, DEFAULT)
-    SERIAL_NEST(LidarTopics, topics, DEFAULT)
+struct LidarParams {
+    bool test_mode = false;
+    bool enable_beacons = true;
+    bool send_scans = true;
+    bool grab_with_interval = false;
+    bool use_serial = true;
+    bool reversed = true; // if scan comes clockwise - it i = reverse;
+    double scan_frequency = 10;
+    float range_min,  =.15;
+    float range_max = 40;
+    float lidar_offset = 0;
+    float lidar_x_offset = 0;
+    float lidar_y_offset = 0;
+    float range_correction = 0;
+    int source_id = 0;
+    std::string scan_mode = "DenseBoost";
+    ObjectDetection objects;
+    BeaconsParams beacons;
+    NetworkParams network;
+    SerialParams serial;
+    LidarTopics topics;
 };
+DESCRIBE(LidarParams, 
+    &_::test_mode, &_::enable_beacons, &_::send_scans,
+    &_::grab_with_interval, &_::use_serial, &_::reversed,
+    &_::scan_frequency, &_::range_min, &_::range_max, &_::lidar_offset,
+    &_::lidar_x_offset,&_::lidar_y_offset,&_::range_correction,&_::source_id,
+    &_::scan_mode,&_::objects,&_::beacons,&_::network,&_::serial,&_::topics)
 
 class LidarNode : public NodeBase
 {

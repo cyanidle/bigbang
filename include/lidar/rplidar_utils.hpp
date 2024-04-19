@@ -14,9 +14,16 @@
 #ifndef _countof
 #define _countof(_Array) (int)(sizeof(_Array) / sizeof(_Array[0]))
 #endif
+
 #define DEG2RAD(x) ((x)*M_PI/180.)
-bool isOk(sl_result result);
-float getAngle(const sl_lidar_response_measurement_node_hq_t& node);
+
+inline bool isOk(sl_result result) {
+    return SL_IS_OK(result);
+}
+
+inline float getAngle(const sl_lidar_response_measurement_node_hq_t& node) {
+    return node.angle_z_q14 * 90.f / 16384.f;
+}
 
 class Helper {
     Q_GADGET

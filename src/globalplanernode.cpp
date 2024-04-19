@@ -1,4 +1,4 @@
-#include "bigbang/nodes/globalplanernode.h"
+#include "global_planer/globalplanernode.h"
 
 using namespace bigbang_eurobot;
 using namespace cv;

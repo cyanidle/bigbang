@@ -13,27 +13,32 @@
 #include <random>
 #include <vector>
 
-struct ParticlesSettings : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(int, count, 2000)
-    SERIAL_FIELD(float, move_noise, 0.05)
-    SERIAL_FIELD(float, turn_noise, 0.04)
-    SERIAL_FIELD(float, move_stddev, 0.03)
-    SERIAL_FIELD(float, theta_stddev, 0.08)
-    SERIAL_FIELD(float, min_x, 0)
-    SERIAL_FIELD(float, min_y, 0)
-    SERIAL_FIELD(float, max_x, 2)
-    SERIAL_FIELD(float, max_y, 3)
-    SERIAL_FIELD(float, resample_move, 0.1)
-    SERIAL_FIELD(int, noises_count, 5000)
-    SERIAL_FIELD(int, recalc_beta_each, 100)
-    SERIAL_FIELD(float, resample_turn, 0.3)
-    SERIAL_FIELD(float, max_disperce, 0.55)
-    SERIAL_FIELD(float, resample_min_divider, 0.3)
-    SERIAL_FIELD(float, weight_compensation, 0.02)
-    SERIAL_FIELD(float, start_rotation, 0)
+struct ParticlesSettings {
+    int count = 2000;
+    float move_noise = 0.05;
+    float turn_noise = 0.04;
+    float move_stddev = 0.03;
+    float theta_stddev = 0.08;
+    float min_x = 0;
+    float min_y = 0;
+    float max_x = 2;
+    float max_y = 3;
+    float resample_move = 0.1;
+    int noises_count = 5000;
+    int recalc_beta_each = 100;
+    float resample_turn = 0.3;
+    float max_disperce = 0.55;
+    float resample_min_divider = 0.3;
+    float weight_compensation = 0.02;
+    float start_rotation = 0;
 };
+DESCRIBE(ParticlesSettings, 
+    &_::count, &_::move_noise, &_::turn_noise,
+    &_::move_stddev, &_::theta_stddev, &_::min_x,
+    &_::min_y, &_::max_x, &_::max_y,
+    &_::resample_move, &_::noises_count, &_::recalc_beta_each,
+    &_::resample_turn, &_::max_disperce, &_::resample_min_divider,
+    &_::weight_compensation, &_::start_rotation)
 
 struct Particle : public PositionF {
     using PositionF::PositionF;
@@ -44,7 +49,7 @@ struct Particles {
     Particles(const ParticlesSettings& settings) :
         m_settings(settings),
         m_currentDisperce(settings.max_disperce),
-        engine(std::random_device()()),
+        fast_engine(std::random_device()()),
         normal_move(0, settings.move_noise),
         normal_turn(0, settings.turn_noise),
         uniform_sample(0, settings.noises_count),
@@ -56,9 +61,11 @@ struct Particles {
         m_particles2.resize(settings.count);
         m_move_noises.reserve(settings.noises_count);
         for (int i = 0; i < settings.noises_count; ++i) {
-            m_move_noises.push_back(PositionF{normal_move(engine),
-                                               normal_move(engine),
-                                               normal_turn(engine)});
+            m_move_noises.push_back({
+                normal_move(fast_engine),
+                normal_move(fast_engine),
+                normal_turn(fast_engine)
+            });
         }
         randomizeParticles();
     }
@@ -197,7 +204,6 @@ private:
     PositionF m_currentMedian;
     float m_currentWeightSum{0};
     float m_currentDisperce;
-    std::mt19937 engine;
     pcg32_fast fast_engine;
     std::normal_distribution<float> normal_move;
     std::normal_distribution<float> normal_turn;
