@@ -8,4 +8,4 @@ RUN bash -c "source /ros_entrypoint.sh && \
     catkin_init_workspace && \
     cd .. && catkin_make"
 WORKDIR /catkin_ws
-ENTRYPOINT [ "/ros_entrypoint.sh" ]
+ENTRYPOINT [ "bash", "-c", "source /ros_entrypoint.sh && source /catkin_ws/devel/setup.bash" ]
