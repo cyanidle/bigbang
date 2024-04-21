@@ -34,6 +34,8 @@ public:
     void shutdown();
 };
 
+struct HasPostDeserialize : describe::Attrs<HasPostDeserialize> {};
+
 template<typename T>
 void DeserializeFromRos(T& out, std::string key = "~") {
     if constexpr (describe::is_described_v<T>) {
@@ -44,6 +46,9 @@ void DeserializeFromRos(T& out, std::string key = "~") {
         if (!ros::param::get(key, out)) {
             ros::param::set(key, out);
         }
+    }
+    if constexpr (describe::has_attr_v<HasPostDeserialize, T>) {
+        out.PostDeserialize();
     }
 }
 
