@@ -74,15 +74,15 @@ if (catkin_FOUND)
     #DEPENDS 
   )
   
-  catkin_install_python(PROGRAMS
-    nodes/arduino_interface.py
-    nodes/local_planer.py
-    nodes/task_manager.py
-    nodes/interconnect.py
-    nodes/scripts_executor.py
-    nodes/gui.py
-    # ^ Place node scripts here
-    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  catkin_install_python(
+    PROGRAMS
+      nodes/arduino_interface.py
+      nodes/local_planer.py
+      nodes/task_manager.py
+      nodes/scripts_executor.py
+      nodes/gui.py
+    DESTINATION 
+      ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 endif()
 

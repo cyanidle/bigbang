@@ -32,7 +32,7 @@ struct CostmapServerParams
     int keep_rviz_points_ms = 15000;
     bool debug = true;
     bool ignore_all_outside = true;
-    std::string image_path = "~/bigbang/config/costmap.png";
+    std::string image_path = "~/bigbang/costmap.png";
     CostmapParams costmap;
     CostmapTopics topics;
     InflateSettings inflate;

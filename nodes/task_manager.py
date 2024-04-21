@@ -4,6 +4,7 @@ from concurrent.futures import thread
 from dataclasses import dataclass
 import dataclasses
 from enum import Enum, IntEnum
+from pathlib import Path
 from threading import Thread
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 from dataclasses import field
@@ -50,7 +51,7 @@ class TimeSettings(RosparamsDataclass):
 class TaskManagerSettings(RosparamsDataclass):
     tick_rate: float = 15
     topics: ManagerTopics = ManagerTopics()
-    file: str = "/home/alexej/catkin_ws/src/bigbang/config/routes/biba/blue.yaml"
+    file: str = (Path.home()/"bigbang/route.yaml").absolute().as_posix()
     tasks: TasksSettings = TasksSettings()
     time: TimeSettings = TimeSettings()
 

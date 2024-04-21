@@ -1,15 +1,8 @@
 <launch>
     <arg name="debug" default="false"/>
-    <arg name="use_own_params" default="true"/>
-    <arg name="robot_name" default="biba"/>
-
-    <group if="$(arg use_own_params)">
-        <rosparam file="$(find bigbang_eurobot)/config/$(arg robot_name)/global_planer.yaml"/>
-    </group>
 
     <node pkg="bigbang_eurobot" type="global_planer" name="global_planer" output="screen" respawn="true" respawn_delay="1"> 
         <param name = "debug" value = "$(arg debug)"/>
-        <param name = "params_file" value = "$(find bigbang_eurobot)/config/global_planer.yaml"/>
     </node>
 
 </launch>

@@ -4,23 +4,16 @@
     <arg name="robot_name" default="biba"/>
     <arg name="arduino_connected" default="false"/>
     <arg name="debug" default="false"/>
-    <arg name="use_own_params" default="true"/>
     <arg name="launch_arduino_node" default="true"/>
-    <arg name="respawn" default="true"/>
-
-    <group if="$(arg use_own_params)">
-        <rosparam file="$(find bigbang_eurobot)/config/$(arg robot_name)/arduino.yaml"/>
-    </group>
 
     <group if="$(arg launch_arduino_node)">
-        <node pkg="bigbang_eurobot" type="arduino_interface.py" name="arduino_interface" output="screen" respawn="$(arg respawn)" respawn_delay="1"> 
+        <node pkg="bigbang_eurobot" type="arduino_interface.py" name="arduino_interface" output="screen" respawn="true" respawn_delay="1"> 
             <param name = "debug" value = "$(arg debug)"/>
             <param name = "allow_debug_connect" value = "false"/>
-            <param name = "params_file" value = "$(find bigbang_eurobot)/config/arduino.yaml"/>
         </node>
     </group>
     <group if="$(arg arduino_connected)">
-        <node pkg="rosserial_arduino" type="serial_node.py" name="arduino_serial_node" output="screen" respawn="$(arg respawn)" respawn_delay="1">
+        <node pkg="rosserial_arduino" type="serial_node.py" name="arduino_serial_node" output="screen" respawn="true" respawn_delay="1">
             <param name="port" value="$(arg port)"/>
             <param name="baud" value="$(arg arduino_baud)"/>
         </node>

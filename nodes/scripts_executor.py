@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from dataclasses import dataclass
 from functools import partial
+from pathlib import Path
 from selectors import PollSelector
 from threading import Thread
 from bigbang_eurobot.srv import ExecuteScript, ExecuteScriptRequest, ExecuteScriptResponse
@@ -27,7 +28,7 @@ class Topics(RosparamsDataclass):
 
 @dataclass
 class ScripterSettings(RosparamsDataclass):
-    file: str = "/home/alexej/catkin_ws/src/bigbang/config/biba/scripts.yaml"
+    file: str = (Path.home()/"bigbang/scripts.yaml").absolute().as_posix()
     topics: Topics = field(default_factory=Topics)
     scripts: ScriptsParams = field(default_factory=ScriptsParams)
     byte_buffer_amp: float = 2

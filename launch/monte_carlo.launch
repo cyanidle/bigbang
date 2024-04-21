@@ -1,18 +1,11 @@
 <launch>
     <arg name="debug" default="false"/>
-    <arg name="use_own_params" default="true"/>
     <arg name="start_x" default="1"/>
     <arg name="start_y" default="1"/>
     <arg name="start_theta" default="0"/>
-    <arg name="robot_name" default="biba"/>
-    
-    <group if="$(arg use_own_params)">
-        <rosparam file="$(find bigbang_eurobot)/config/$(arg robot_name)/monte_carlo.yaml"/>
-    </group>
 
     <node pkg="bigbang_eurobot" name="monte_carlo" type="monte_carlo" output="screen">
         <param name = "debug" value = "$(arg debug)"/>
-        <param name = "params_file" value = "$(find bigbang_eurobot)/config/monte_carlo.yaml"/>
         <param name = "start_x" value = "$(arg start_x)"/>
         <param name = "start_y" value = "$(arg start_y)"/>
         <param name = "start_theta" value = "$(arg start_theta)"/>

@@ -1,17 +1,9 @@
 <launch>
     <arg name="debug" default="false"/>
-    <arg name="use_own_params" default="true"/>
     <arg name="lidar_test_mode" default="false"/>
-    <arg name="robot_name" default="biba"/>
-    <arg name="round_side" default="blue"/>
-    
-    <group if="$(arg use_own_params)">
-        <rosparam file="$(find bigbang_eurobot)/config/$(arg robot_name)/lidar_$(arg round_side).yaml"/>
-    </group>
 
     <node pkg="bigbang_eurobot" name="bigbang_rplidar" type="bigbang_rplidar" output="screen">
         <param name = "debug" value = "$(arg debug)"/>
-        <param name = "params_file" value = "$(find bigbang_eurobot)/config/lidar_$(arg round_side).yaml"/>
         <param name = "test_mode" value = "$(arg lidar_test_mode)"/>
     </node>
 
