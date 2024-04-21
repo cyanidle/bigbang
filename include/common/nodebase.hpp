@@ -41,7 +41,9 @@ void DeserializeFromRos(T& out, std::string key = "~") {
             DeserializeFromRos(f.get(out), key+'/'+std::string{f.name});
         });
     } else {
-        ros::param::get(key, out);
+        if (!ros::param::get(key, out)) {
+            ros::param::set(key, out);
+        }
     }
 }
 
