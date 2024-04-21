@@ -1,23 +1,12 @@
 #include "global_planer/globalplanernode.hpp"
+#include "common/nodebase.hpp"
 
 using namespace bigbang_eurobot;
 using namespace cv;
 GlobalPlaner::GlobalPlaner(const NodeSettings &settings) :
     NodeBase(settings),
-    m_params(),
     m_graph(m_params._nodes_batch_size),
-    m_positionSub(),
-    m_costmapSub(),
-    m_rvizTargetSub(),
-    m_targetSub(),
-    m_pathPub(),
-    m_tfMsg(),
-    m_pathMsg(),
-    m_tfBroad(),
-    m_position(),
     m_updatePathTimer(new QTimer(this)),
-    m_target(),
-    m_targetStatus()
 {
     updateParamsImpl();
     connect(this, &GlobalPlaner::planningFailed, &GlobalPlaner::onPlanningFailed);

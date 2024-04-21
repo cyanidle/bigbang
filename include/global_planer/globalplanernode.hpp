@@ -97,7 +97,7 @@ struct TargetStatus
     }
 };
 
-class GlobalPlaner : public QObject
+class GlobalPlaner : public NodeBase
 {
     Q_OBJECT
 public: 

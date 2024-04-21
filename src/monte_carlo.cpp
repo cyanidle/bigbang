@@ -1,4 +1,6 @@
 #include "monte_carlo/monte_carlo.hpp"
+#include "common/nodebase.hpp"
+
 #define MAX_UNC m_params.max_uncertainty
 #define MAX_UNC_9   MAX_UNC, 0, 0, \
                     0, MAX_UNC, 0, \
@@ -47,11 +49,6 @@ bool MonteCarlo::discardBelief(std_srvs::EmptyRequest &req, std_srvs::EmptyRespo
 {
     m_particles.discardBelief();
     return true;
-}
-
-const QString &MonteCarlo::baseFrameId() const
-{
-    return m_params.topics.base_frame_id;
 }
 
 void MonteCarlo::applyMovesStep()

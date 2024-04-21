@@ -2,6 +2,7 @@
 #define MONTE_CARLO_H
 
 #include "particles.hpp"
+#include "describe/describe.hpp"
 #include "bigbang_eurobot/LaserBeacons.h"
 #include "bigbang_eurobot/Move2d.h"
 #include "bigbang_eurobot/MonteCarloState.h"
@@ -66,7 +67,7 @@ DESCRIBE(MonteCalroTopics,
     &_::start_theta,&_::send_particles,&_::resample_on_measure, 
     &_::discard_after_bad_for,&_::decomposition_alg)
 
-class MonteCarlo : public QObject
+class MonteCarlo : public NodeBase
 {
     Q_OBJECT
 public:

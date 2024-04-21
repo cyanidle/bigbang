@@ -89,24 +89,39 @@ endif()
 find_package(Qt5 REQUIRED COMPONENTS Core)
 find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
-add_compile_options(-std=c++11)
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wno-sign-compare -O3 -fPIC -ffast-math")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC -Wno-sign-compare")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pthread")
-set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS}")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wno-sign-compare ")
 set(CMAKE_AUTOMOC ON)
 
-add_library(bigbang-common INTERFACE)
-target_include_directories(bigbang-common INTERFACE
+add_library(bigbang-common STATIC
+  include/common/nodebase.hpp
+  src/nodebase.cpp
+  )
+
+target_compile_options(bigbang-common PUBLIC
+  -Wall -fPIC -Wno-sign-compare
+)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+  target_compile_options(bigbang-common PUBLIC
+    -Ofast -ffast-math
+  )
+endif()
+
+target_include_directories(bigbang-common PUBLIC
   include
   ${catkin_INCLUDE_DIRS}
   ${Qt5Core_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
-target_compile_definitions(bigbang-common INTERFACE 
+
+target_compile_definitions(bigbang-common PUBLIC 
   BOOST_BIND_GLOBAL_PLACEHOLDERS
 )
-target_link_libraries(bigbang-common INTERFACE
+
+target_link_libraries(bigbang-common PUBLIC
   describe pcg ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} Qt5::Core
 )
 
@@ -126,6 +141,8 @@ add_executable(global_planer
 target_link_libraries(global_planer PRIVATE bigbang-common)
 
 add_executable(bigbang_rplidar
+  include/lidar/rplidarnode.hpp
+  include/lidar/rplidar_utils.hpp
   src/rplidarnode.cpp
 )
 

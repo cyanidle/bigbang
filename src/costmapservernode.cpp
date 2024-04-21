@@ -3,31 +3,19 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <chrono>
+#include "common/nodebase.hpp"
+#include "common/deserialize.hpp"
 #include <tf/LinearMath/Quaternion.h>
 
 using namespace cv;
 
 void CostmapServer::updateParams(const QString &name) {
-    m_params.update(name);
-    m_updateTimer->setInterval(m_params.update_rate_ms);
-    m_objectsSub = nh()->subscribe(params().topics.objects_sub.toStdString(), 800, &CostmapServer::objectsCb, this);
-    m_rvizPointsSub = nh()->subscribe(params().topics.rviz_points.toStdString(), 20, &CostmapServer::rvizPointCb, this);
-    m_mapPublisher = nh()->advertise<nav_msgs::OccupancyGrid>(params().topics.costmap_pub.toStdString(), 20);
-    initMap();
-    if (!m_resetRvizPoints) {
-        m_resetRvizPoints = new QTimer(this);
-        m_resetRvizPoints->callOnTimeout([this](){
-            m_receivedRvizPoints.resetValues();
-        });
-        m_resetRvizPoints->setSingleShot(true);
-    }
-    m_resetRvizPoints->setInterval(params().keep_rviz_points_ms);
 }
 
 
 void CostmapServer::objectsCb(const bigbang_eurobot::MapObjectConstPtr &msg)
 {
-    if (m_params.ignore_all_outside &&
+    if (params.ignore_all_outside &&
         !(0 <= msg->x && msg->x <= m_costmap.meta().width) &&
         !(0 <= msg->y && msg->y <= m_costmap.meta().height))
     {
@@ -43,39 +31,35 @@ void CostmapServer::rvizPointCb(const geometry_msgs::PointStampedConstPtr &msg)
 {
     auto coord = m_receivedRvizPoints.metersPosToCells(msg->point.x, msg->point.y);
     m_receivedRvizPoints.set(coord, 100);
-    m_resetRvizPoints->setInterval(params().keep_rviz_points_ms);
+    m_resetRvizPoints->setInterval(params.keep_rviz_points_ms);
     m_resetRvizPoints->start();
 }
 
-CostmapServer::CostmapServer(const NodeSettings &settings):
-    NodeBase(settings),
-    m_gridMsg(),
-    m_params(),
-    m_updateTimer(new QTimer(this)),
-    m_costmap(),
-    m_inflatedCostmap(),
-    m_receivedRvizPoints(),
-    m_receivedLaserPoints(),
-    m_mapPublisher(),
-    m_rvizPointsSub(),
-    m_tf(),
-    m_tfMsg(),
-    m_resetRvizPoints()
+CostmapServer::CostmapServer():
+    m_updateTimer(new QTimer(this))
 { 
-    updateParams();
+    DeserializeFromRos(params);
+    m_updateTimer->setInterval(params.update_rate_ms);
+    m_objectsSub = nh()->subscribe(params.topics.objects_sub.toStdString(), 800, &CostmapServer::objectsCb, this);
+    m_rvizPointsSub = nh()->subscribe(params.topics.rviz_points.toStdString(), 20, &CostmapServer::rvizPointCb, this);
+    m_mapPublisher = nh()->advertise<nav_msgs::OccupancyGrid>(params.topics.costmap_pub.toStdString(), 20);
+    initMap();
+    if (!m_resetRvizPoints) {
+        m_resetRvizPoints = new QTimer(this);
+        m_resetRvizPoints->callOnTimeout(this, [this]{
+            m_receivedRvizPoints.resetValues();
+        });
+        m_resetRvizPoints->setSingleShot(true);
+    }
+    m_resetRvizPoints->setInterval(params.keep_rviz_points_ms);
     idsToRemove.reserve(100);
-    m_tfMsg.child_frame_id = params().topics.child_frame_id.toStdString();
-    m_tfMsg.header.frame_id = params().topics.frame_id.toStdString();
+    m_tfMsg.child_frame_id = params.topics.child_frame_id.toStdString();
+    m_tfMsg.header.frame_id = params.topics.frame_id.toStdString();
     tf::Quaternion q;
     q.setRPY(0, 0, 0);
     tf::quaternionTFToMsg(q, m_tfMsg.transform.rotation);
     m_updateTimer->callOnTimeout(this, &CostmapServer::updateMap);
     ROS_INFO_STREAM("Costmap server started!");
-}
-
-const QString &CostmapServer::baseFrameId() const
-{
-    return m_params.topics.child_frame_id;
 }
 
 CostmapServer::~CostmapServer()
@@ -86,14 +70,14 @@ CostmapServer::~CostmapServer()
 
 void CostmapServer::initMap() 
 {
-    Mat rimage = imread(params().image_path.toStdString().c_str(), IMREAD_GRAYSCALE);
+    Mat rimage = imread(params.image_path.toStdString().c_str(), IMREAD_GRAYSCALE);
     Mat image;
     flip(rimage, image, RotateFlags::ROTATE_180);
     if (!image.size) {
         throw std::runtime_error("Empty source image for costmap!");
     }
     ROS_DEBUG_STREAM("Got image: \n" << image);
-    if (image.cols != params().costmap.width || image.rows != params().costmap.height) {
+    if (image.cols != params.costmap.width || image.rows != params.costmap.height) {
         throw std::runtime_error("Costmap params are not coherent with image loaded!");
     }
     auto flat = image.reshape(1, image.total());
@@ -103,25 +87,25 @@ void CostmapServer::initMap()
                                                 : flat.clone();
     std::vector<uchar> reversed(vec.rbegin(), vec.rend()); 
     m_costmap.setMeta({
-        params().costmap.width,
-        params().costmap.height,
-        params().costmap.resolution
+        params.costmap.width,
+        params.costmap.height,
+        params.costmap.resolution
     });
     m_dpointsForSizes.reserve(50);
     m_dpointsForSizes.clear();
     m_costmap.fillFromVector(copyVectorAs<uint8_t>(reversed));
-    m_costmap.updateSettings(params().inflate_static);
+    m_costmap.updateSettings(params.inflate_static);
 
     m_receivedRvizPoints.copyFrom(m_costmap);
-    m_receivedRvizPoints.updateSettings(params().inflate);
+    m_receivedRvizPoints.updateSettings(params.inflate);
     m_receivedLaserPoints.copyFrom(m_receivedRvizPoints);
     m_currentReceived.copyFrom(m_receivedRvizPoints);
     m_currentReceived.resetValues();
     m_receivedRvizPoints.resetValues();
     m_receivedLaserPoints.resetValues();
-    m_gridMsg.info.resolution = params().costmap.resolution;
-    m_gridMsg.info.width = params().costmap.width;
-    m_gridMsg.info.height = params().costmap.height;
+    m_gridMsg.info.resolution = params.costmap.resolution;
+    m_gridMsg.info.width = params.costmap.width;
+    m_gridMsg.info.height = params.costmap.height;
     m_costmap = m_costmap.inflated();
     ROS_INFO_STREAM("Costmap read successfully!");
     m_updateTimer->start();
@@ -135,7 +119,7 @@ void CostmapServer::updateMap()
     m_currentReceived.inflateInto(m_inflatedCostmap);
     m_currentReceived.resetValues();
     sendMap();
-    if (!params().debug) {
+    if (!params.debug) {
         return;
     }
     auto passed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count();
@@ -147,7 +131,7 @@ void CostmapServer::updateObjects()
     m_receivedLaserPoints.resetValues();
     for (auto &source : m_objects) {
         for (auto &obj : source.second){
-            obj.second.ttl -= m_params.update_rate_ms;
+            obj.second.ttl -= params.update_rate_ms;
             if (obj.second.ttl <= 0) {
                 idsToRemove.push_back(obj.first);
                 continue;
@@ -168,7 +152,7 @@ void CostmapServer::sendMap()
     if (m_inflatedCostmap.isEmpty()) {
         return;
     }
-    m_gridMsg.header.frame_id = params().topics.frame_id.toStdString();
+    m_gridMsg.header.frame_id = params.topics.frame_id.toStdString();
     m_gridMsg.header.stamp = stamp;
     m_gridMsg.data = std::move(m_inflatedCostmap.data());
     m_mapPublisher.publish(m_gridMsg);   

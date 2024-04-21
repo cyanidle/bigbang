@@ -3,6 +3,7 @@
 #include "pcg/pcg_random.hpp"
 #include "qthread.h"
 #include <boost/filesystem.hpp>
+#include "common/nodebase.hpp"
 #include <math.h>
 #include <random>
 
@@ -12,13 +13,7 @@ using ms = std::chrono::milliseconds;
 using namespace std::chrono;
 using sys_clock = std::chrono::high_resolution_clock;
 
-const QString &LidarNode::baseFrameId() const
-{
-    return m_params.topics.base_frame_id;
-}
-
-LidarNode::LidarNode(const NodeSettings &settings) :
-    NodeBase(settings),
+LidarNode::LidarNode() :
     m_driver(*createLidarDriver()),
     m_mainLoop(new QTimer(this))
 {
@@ -43,30 +38,30 @@ void LidarNode::monteCarloStateCb(const bigbang_eurobot::MonteCarloStateConstPtr
     m_monteCarloState = *state;
 }
 
-void LidarNode::updateParams(const QString &name)
+void LidarNode::updateParams()
 {
-    m_params.update(name);
+    DeserializeFromRos(params);
     m_nodes.resize(MAX_NODES);
     m_parsedNodes.resize(MAX_NODES);
     m_scanMsg.ranges.resize(MAX_NODES);
-    m_posOffset = {m_params.lidar_x_offset, m_params.lidar_y_offset};
+    m_posOffset = {params.lidar_x_offset, params.lidar_y_offset};
     m_scanMsg.intensities.resize(MAX_NODES);
-    m_scanMsg.range_min = m_params.range_min;
-    m_scanMsg.range_max = m_params.range_max;
-    m_tfMsg.header.frame_id = m_params.topics.frame_id.toStdString();
-    m_tfMsg.child_frame_id = m_params.topics.child_frame_id.toStdString();
-    m_tfMsg.transform.translation.x = m_params.lidar_x_offset;
-    m_tfMsg.transform.translation.y = m_params.lidar_y_offset;
-    m_tfMsg.transform.rotation = msgFromTheta(m_params.lidar_offset);
-    m_scanMsg.header.frame_id = m_params.topics.child_frame_id.toStdString().c_str();
-    m_posSub = nh()->subscribe(m_params.topics.position_sub.toStdString(), 20, &LidarNode::positionCb, this);
-    m_moveSub = nh()->subscribe(m_params.topics.move_sub.toStdString(), 20, &LidarNode::moveCb, this);
-    m_monteCarloSub = nh()->subscribe(m_params.topics.monte_carlo_sub.toStdString(), 20, &LidarNode::monteCarloStateCb, this);
-    m_objsPub = nh()->advertise<bigbang_eurobot::MapObject>(m_params.topics.objects_pub.toStdString(), 700);
-    m_scanPub = nh()->advertise<sensor_msgs::LaserScan>(m_params.topics.laser_pub.toStdString(), 20);
-    m_beaconsPub = nh()->advertise<bigbang_eurobot::LaserBeacons>(m_params.topics.beacons_pub.toStdString(), 20);
-    m_closestObjPub = nh()->advertise<bigbang_eurobot::MapObject>(m_params.topics.closest_obj_pub.toStdString(), 20);
-    if (!m_params.test_mode) {
+    m_scanMsg.range_min = params.range_min;
+    m_scanMsg.range_max = params.range_max;
+    m_tfMsg.header.frame_id = params.topics.frame_id;
+    m_tfMsg.child_frame_id = params.topics.child_frame_id;
+    m_tfMsg.transform.translation.x = params.lidar_x_offset;
+    m_tfMsg.transform.translation.y = params.lidar_y_offset;
+    m_tfMsg.transform.rotation = msgFromTheta(params.lidar_offset);
+    m_scanMsg.header.frame_id = params.topics.child_frame_id.c_str();
+    m_posSub = nh()->subscribe(params.topics.position_sub, 20, &LidarNode::positionCb, this);
+    m_moveSub = nh()->subscribe(params.topics.move_sub, 20, &LidarNode::moveCb, this);
+    m_monteCarloSub = nh()->subscribe(params.topics.monte_carlo_sub, 20, &LidarNode::monteCarloStateCb, this);
+    m_objsPub = nh()->advertise<bigbang_eurobot::MapObject>(params.topics.objects_pub, 700);
+    m_scanPub = nh()->advertise<sensor_msgs::LaserScan>(params.topics.laser_pub, 20);
+    m_beaconsPub = nh()->advertise<bigbang_eurobot::LaserBeacons>(params.topics.beacons_pub, 20);
+    m_closestObjPub = nh()->advertise<bigbang_eurobot::MapObject>(params.topics.closest_obj_pub, 20);
+    if (!params.test_mode) {
         if (!m_driver->isConnected()) {
             connectDriver();
             if (!getDeviceInfo()) {
@@ -78,7 +73,7 @@ void LidarNode::updateParams(const QString &name)
                 shutdown();
             }
             if (!initMode()) {
-                ROS_ERROR_STREAM("Unsupported mode: " + m_params.scan_mode.toStdString());
+                ROS_ERROR_STREAM("Unsupported mode: " + params.scan_mode);
                 shutdown();
             }
             startMotor();
@@ -91,33 +86,33 @@ void LidarNode::updateParams(const QString &name)
 
 void LidarNode::initBeacons()
 {
-    auto beaconsCount = m_params.beacons.all_poses_x.size();
-    if (m_params.beacons.all_poses_y.size() != beaconsCount || m_params.beacons.all_shimmering_hz.size() != beaconsCount) {
+    auto beaconsCount = params.beacons.all_poses_x.size();
+    if (params.beacons.all_poses_y.size() != beaconsCount || params.beacons.all_shimmering_hz.size() != beaconsCount) {
         ROS_ERROR("Inconsistent beacons params (all arrays must be same size!)");
     }
     m_beacons.reserve(beaconsCount);
     for (auto i = 0; i < beaconsCount; i++) {
         auto currentBeacon = LaserBeacon(
-                    m_params.beacons.all_shimmering_hz[i],
-                   {m_params.beacons.all_poses_x[i], m_params.beacons.all_poses_y[i]},
+                    params.beacons.all_shimmering_hz[i],
+                   {params.beacons.all_poses_x[i], params.beacons.all_poses_y[i]},
                     i);
         m_beacons.push_back(currentBeacon);
     }
-    m_shape = {m_beacons, m_params.beacons};
+    m_shape = {m_beacons, params.beacons};
     m_beaconsMsg.beacons.reserve(m_beacons.size());
 }
 
 void LidarNode::initDetection()
 {
     m_baseOffset = {1, 0};
-    m_baseOffset = m_baseOffset.rotated_by(m_params.lidar_offset);
+    m_baseOffset = m_baseOffset.rotated_by(params.lidar_offset);
 }
 
 void LidarNode::startMotor()
 {
     if (!m_needsTune) {
-        m_driver->setMotorSpeed(m_params.scan_frequency * 60);
-        ROS_INFO("set lidar scan frequency to %.1f Hz(%.1f Rpm) ", m_params.scan_frequency, m_params.scan_frequency*60);
+        m_driver->setMotorSpeed(params.scan_frequency * 60);
+        ROS_INFO("set lidar scan frequency to %.1f Hz(%.1f Rpm) ", params.scan_frequency, params.scan_frequency*60);
     }
 }
 
@@ -143,7 +138,7 @@ void LidarNode::grabMock(sl_lidar_response_measurement_node_hq_t* nodebuffer, si
         auto dist = 0.5;
         for (int i = 0; i < count; i++) {
             nodebuffer[i] = sl_lidar_response_measurement_node_hq_t {
-                static_cast<sl_u16>(i * coeff * (m_params.reversed?-1:1)),
+                static_cast<sl_u16>(i * coeff * (params.reversed?-1:1)),
                 static_cast<sl_u32>((dist + rand()) * 4000 * 1000),
                 47 << 2,
                 0
@@ -153,7 +148,7 @@ void LidarNode::grabMock(sl_lidar_response_measurement_node_hq_t* nodebuffer, si
     auto spawnGroup = [&](int start, int end, float dist) mutable {
         for (int i = start; i < end; i++) {
             nodebuffer[i] = sl_lidar_response_measurement_node_hq_t {
-                static_cast<sl_u16>(i * coeff * (m_params.reversed?-1:1)),
+                static_cast<sl_u16>(i * coeff * (params.reversed?-1:1)),
                 static_cast<sl_u32>((dist + rand()) * 4000),
                 47 << 2,
                 0
@@ -168,7 +163,7 @@ void LidarNode::grabMock(sl_lidar_response_measurement_node_hq_t* nodebuffer, si
     spawnGroup(200, 210, 2);
     spawnGroup(220, 230, 2.1);
     spawnGroup(240, 250, 2);
-    if (m_params.reversed) {
+    if (params.reversed) {
         for (int i = 0; i < count/2; i++) {
             std::swap(nodebuffer[i], nodebuffer[count - i - 1]);
         }
@@ -181,11 +176,11 @@ void LidarNode::mainLoop()
 {
     auto count = MAX_NODES;
     auto startTime = sys_clock::now();
-    if (m_params.test_mode) {
+    if (params.test_mode) {
         grabMock(m_nodes.data(), count);
     } else {
         sl_result grabResult;
-        if (m_params.grab_with_interval) {
+        if (params.grab_with_interval) {
             grabResult = m_driver->getScanDataWithIntervalHq(m_nodes.data(), count);
         } else {
             grabResult = m_driver->grabScanDataHq(m_nodes.data(), count);
@@ -213,16 +208,16 @@ void LidarNode::mainLoop()
     m_scanMsg.scan_time = passedTime;
     m_scanMsg.header.stamp = ros::Time::now();
     m_scanMsg.time_increment = passedTime / count;
-    if (m_params.reversed) {
+    if (params.reversed) {
         std::reverse(m_nodes.begin(), m_nodes.end());
     }
     for (size_t i = 0; i < count; i++) {
         m_parsedNodes[i].intensity = static_cast<float>(m_nodes[i].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
-        m_parsedNodes[i].range = static_cast<float>(m_nodes[i].dist_mm_q2/4000.f) + m_params.range_correction;
-        if (m_parsedNodes[i].range < m_params.range_min) {
+        m_parsedNodes[i].range = static_cast<float>(m_nodes[i].dist_mm_q2/4000.f) + params.range_correction;
+        if (m_parsedNodes[i].range < params.range_min) {
             m_parsedNodes[i].range = std::numeric_limits<float>::infinity();
         }
-        m_parsedNodes[i].relTheta = toRadians(m_nodes[i].angle_z_q14 * 90.f / 16384.f) * (m_params.reversed? -1 : 1);
+        m_parsedNodes[i].relTheta = toRadians(m_nodes[i].angle_z_q14 * 90.f / 16384.f) * (params.reversed? -1 : 1);
         auto norm = m_baseOffset.rotated_by(m_parsedNodes[i].relTheta + m_position.getTheta());
         m_parsedNodes[i].position = norm * m_parsedNodes[i].range + m_position.toCoord() + m_posOffset;
         m_scanMsg.intensities[i] = m_parsedNodes[i].intensity;
@@ -243,7 +238,7 @@ void LidarNode::mainLoop()
     detectBeacons(passedTimeMs);
     sendObjects();
     visualize();
-    if (m_params.send_scans) {
+    if (params.send_scans) {
         m_scanPub.publish(m_scanMsg);
         m_tfMsg.header.stamp = m_scanMsg.header.stamp;
         m_tfMsg.header.seq++;
@@ -252,27 +247,27 @@ void LidarNode::mainLoop()
 }
 
 void LidarNode::detectObjects() {
-    auto validMinPos = Coord_<float>(m_params.objects.min_x, m_params.objects.min_y);
-    auto validMaxPos = Coord_<float>(m_params.objects.max_x, m_params.objects.max_y);
+    auto validMinPos = Coord_<float>(params.objects.min_x, params.objects.min_y);
+    auto validMaxPos = Coord_<float>(params.objects.max_x, params.objects.max_y);
     auto currentStart = -1;
     auto wasCloseEnough = false;
     for (quint32 i = 1; i < m_parsedNodes.size(); ++i) {
         auto &last = m_parsedNodes[i - 1];
         auto &current = m_parsedNodes[i];
-        auto lastValid = m_position.dist_to(last.position) < m_params.objects.max_dist;
-        auto currentValid = m_position.dist_to(current.position) < m_params.objects.max_dist;
+        auto lastValid = m_position.dist_to(last.position) < params.objects.max_dist;
+        auto currentValid = m_position.dist_to(current.position) < params.objects.max_dist;
         auto dist = current.position.dist_to(last.position);
-        auto closeEnough = dist <= m_params.objects.max_dist_between_dots;
+        auto closeEnough = dist <= params.objects.max_dist_between_dots;
         if (lastValid && currentStart == -1 && closeEnough) {
             currentStart = i - 1;
         }
         auto jumped = (!closeEnough && wasCloseEnough) || !currentValid;
         auto startValid = currentStart != -1;
         auto dotsDiff = i - currentStart + 1;
-        auto tooMany = dotsDiff > m_params.objects.split_each;
+        auto tooMany = dotsDiff > params.objects.split_each;
         wasCloseEnough = closeEnough;
         if ((jumped || tooMany || i == m_parsedNodes.size() - 1) && startValid) {
-            auto enoughDots = dotsDiff >= m_params.objects.min_points;
+            auto enoughDots = dotsDiff >= params.objects.min_points;
             if (!enoughDots) {
                 currentStart = -1;
                 continue;
@@ -282,10 +277,10 @@ void LidarNode::detectObjects() {
             auto middle = startPos + (stopPos - startPos) / 2;
             auto size = stopPos.dist_to(startPos);
             auto correction = CoordF(middle - m_position.toCoord()).normalized() * size / 1.9f;
-            LaserObject currentObj(middle + correction, size, m_params.objects.start_ttl, m_position.dist_to(middle));
-            if (m_position.dist_to(currentObj.position) <= m_params.objects.max_dist &&
+            LaserObject currentObj(middle + correction, size, params.objects.start_ttl, m_position.dist_to(middle));
+            if (m_position.dist_to(currentObj.position) <= params.objects.max_dist &&
                     currentObj.posValid(validMinPos, validMaxPos)) {
-                m_objects.insertFound(currentObj, m_params.objects);
+                m_objects.insertFound(currentObj, params.objects);
             }
             currentStart = -1;
         }
@@ -294,10 +289,10 @@ void LidarNode::detectObjects() {
 
 void LidarNode::detectBeacons(float passedTimeMs)
 {
-    if (!m_params.enable_beacons) return;
-    if (m_timeMonteBad > m_params.beacons.time_before_global) {
+    if (!params.enable_beacons) return;
+    if (m_timeMonteBad > params.beacons.time_before_global) {
         m_shouldGlobalLocalize = true;
-    } else if (m_timeMonteOk > m_params.beacons.time_for_global) {
+    } else if (m_timeMonteOk > params.beacons.time_for_global) {
         m_shouldGlobalLocalize = false;
     }
     m_beaconsMsg.beacons.clear();
@@ -305,14 +300,14 @@ void LidarNode::detectBeacons(float passedTimeMs)
         beacon.setLost(passedTimeMs);
     }
     auto testSize = [&](const LaserObject *obj) {
-        return m_params.beacons.min_size <= obj->size && obj->size <= m_params.beacons.max_size;
+        return params.beacons.min_size <= obj->size && obj->size <= params.beacons.max_size;
     };
     auto useSimple = !m_shouldGlobalLocalize;
     if (useSimple) {
         ROS_INFO_THROTTLE(3, "[Lidar] Using SIMPLE localization");
         // while ok --> minor correction using closest beacons
         for (auto &beacon: m_beacons) {
-            auto closest = m_objects.closestByPos(beacon.targetPos, m_params.beacons.simple.dist_margin);
+            auto closest = m_objects.closestByPos(beacon.targetPos, params.beacons.simple.dist_margin);
             if (closest && testSize(closest)) {
                 beacon.setFound(*closest);
                 m_beaconsMsg.beacons.push_back(beacon.toMsg(m_position));
@@ -341,7 +336,7 @@ void LidarNode::sendObjects()
         auto toSend = bigbang_eurobot::MapObject();
         toSend.id = obj.id;
         toSend.size = obj.size;
-        toSend.ttl = obj.ttl * m_params.objects.map_ttl_coeff;
+        toSend.ttl = obj.ttl * params.objects.map_ttl_coeff;
         toSend.x = obj.position.getX();
         toSend.y = obj.position.getY();
         toSend.dist_to = obj.distTo;
@@ -360,9 +355,9 @@ void LidarNode::sendObjects()
 void LidarNode::visualize()
 {
     for (auto &beacon: m_beacons) {
-        drawSphere(beacon.targetPos, m_scanMsg.scan_time * 1.1, m_scanMsg.scan_time * 2, 1, 1, 1, 0.3);
+        //drawSphere(beacon.targetPos, m_scanMsg.scan_time * 1.1, m_scanMsg.scan_time * 2, 1, 1, 1, 0.3);
         if (beacon.isValid) {
-            drawSphere(beacon.realPos, beacon.size, 0.2);
+            //drawSphere(beacon.realPos, beacon.size, 0.2);
         }
     }
 }
@@ -374,17 +369,17 @@ void LidarNode::connectDriver()
         delete m_channel;
         m_channel = nullptr;
     }
-    if (m_params.use_serial) {
-        fs::path port(m_params.serial.port.toStdString());
+    if (params.use_serial) {
+        fs::path port(params.serial.port);
         if (!fs::exists(port)) {
             ROS_ERROR_STREAM("Port does not exist: " << port.generic_string());
             shutdown();
         }
-        m_channel = *createSerialPortChannel(m_params.serial.port.toStdString(), m_params.serial.baudrate);
-    } else if (m_params.network.use_tcp) {
-        m_channel = *createTcpChannel(m_params.network.host.toStdString(), m_params.network.port);
+        m_channel = *createSerialPortChannel(params.serial.port, params.serial.baudrate);
+    } else if (params.network.use_tcp) {
+        m_channel = *createTcpChannel(params.network.host, params.network.port);
     } else {
-        m_channel = *createUdpChannel(m_params.network.host.toStdString(), m_params.network.port);
+        m_channel = *createUdpChannel(params.network.host, params.network.port);
     }
     if (!m_channel) {
         ROS_ERROR_STREAM("Error connecting to lidar");
@@ -393,8 +388,8 @@ void LidarNode::connectDriver()
     auto result = m_driver->connect(m_channel);
     if (!isOk(result)) {
         ROS_ERROR_STREAM("Lidar Connection Error: " + printResult(result));
-        ROS_ERROR_STREAM("Errno: " << Helper::printErrno().toStdString());
-        ROS_ERROR_STREAM("BAUD: " << m_params.serial.baudrate);
+        ROS_ERROR_STREAM("Errno: " << Helper::printErrno());
+        ROS_ERROR_STREAM("BAUD: " << params.serial.baudrate);
         shutdown();
     } else {
         ROS_INFO_STREAM("Connection status: " << printResult(result));
@@ -446,7 +441,7 @@ bool LidarNode::getDeviceInfo()
     op_result = m_driver->getDeviceInfo(devinfo);
     if (!isOk(op_result)) {
         ROS_ERROR_STREAM("Error, unexpected error, code: " << printResult(op_result));
-        ROS_ERROR_STREAM("Errno: " << Helper::printErrno().toStdString());
+        ROS_ERROR_STREAM("Errno: " << Helper::printErrno());
         return false;
     }
     char sn_str[35] = {0}; 
@@ -483,7 +478,7 @@ bool LidarNode::initMode()
     for (auto &mode : allSupportedScanModes) {
         ROS_WARN("Supported Mode: %s: max_distance: %.1f m, Point number: %.1fK", 
         mode.scan_mode, mode.max_distance, (1000/mode.us_per_sample));
-        if (mode.scan_mode == m_params.scan_mode) {
+        if (mode.scan_mode == params.scan_mode) {
             m_lidarMode = mode;   
             m_driver->startScan(false, m_lidarMode.id, 0, &m_lidarMode);
             found = true;
@@ -496,8 +491,8 @@ bool LidarNode::initMode()
 bool LidarNode::tuneRpmAfterScan()
 {
     if (m_needsTune) {
-        ROS_INFO("[TUNE] set lidar scan frequency to %.1f Hz(%.1f Rpm) ", m_params.scan_frequency, m_params.scan_frequency*60);
-        m_driver->setMotorSpeed(m_params.scan_frequency * 60); //rpm
+        ROS_INFO("[TUNE] set lidar scan frequency to %.1f Hz(%.1f Rpm) ", params.scan_frequency, params.scan_frequency*60);
+        m_driver->setMotorSpeed(params.scan_frequency * 60); //rpm
         m_needsTune = false;
         return true;
     }

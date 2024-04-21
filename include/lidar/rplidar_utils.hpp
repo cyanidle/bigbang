@@ -1,6 +1,7 @@
-#ifndef RPLIDAR_UTILS_H
-#define RPLIDAR_UTILS_H
+#pragma once
+
 #include "common/position.hpp"
+#include "describe/describe.hpp"
 #include "ros/console.h"
 #include "sl_lidar.h"
 #include <QObject>
@@ -50,10 +51,10 @@ public:
         ErrorBadFileDesctiptor = EBADF
     };
     Q_ENUM(Errors)
-    static QString printErrno() {
+    static std::string printErrno() {
         return printErrno(errno);
     }
-    static QString printErrno(int error) {
+    static std::string printErrno(int error) {
         auto errs = QMetaEnum::fromType<Errors>();
         auto result = errs.valueToKey(error);
         if (result) {
@@ -277,4 +278,3 @@ struct ObjectsMap {
     quint32 m_lastId{0};
 };
 
-#endif

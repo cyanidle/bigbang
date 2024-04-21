@@ -1,18 +1,24 @@
 #pragma once
 
-#include "common/costmap.hpp"
-#include "beacons_shape.hpp"
+#include <QTimer>
+#include <chrono>
+#include <ros/ros.h>
+#include <boost/pool/pool_alloc.hpp>
+#include <tf/transform_broadcaster.h>
+
 #include "bigbang_eurobot/Measure2d.h"
 #include "bigbang_eurobot/MonteCarloState.h"
 #include "bigbang_eurobot/Move2d.h"
-#include "tf/transform_broadcaster.h"
+#include "bigbang_eurobot/LaserBeacons.h"
+
 #include "sl_lidar.h"
+
+#include "common/nodebase.hpp"
+#include "common/costmap.hpp"
+#include "beacons_shape.hpp"
 #include "sensor_msgs/LaserScan.h"
-#include "rplidar_utils.h"
-#include <boost/pool/pool_alloc.hpp>
-#include <chrono>
-#include <bigbang_eurobot/LaserBeacons.h>
-#include <ros/ros.h>
+#include "describe/describe.hpp"
+#include "rplidar_utils.hpp"
 
 #define MAX_NODES 8192UL
 
@@ -54,7 +60,7 @@ struct LidarParams {
     bool use_serial = true;
     bool reversed = true; // if scan comes clockwise - it i = reverse;
     double scan_frequency = 10;
-    float range_min,  =.15;
+    float range_min = 0.15;
     float range_max = 40;
     float lidar_offset = 0;
     float lidar_x_offset = 0;
@@ -75,7 +81,7 @@ DESCRIBE(LidarParams,
     &_::lidar_x_offset,&_::lidar_y_offset,&_::range_correction,&_::source_id,
     &_::scan_mode,&_::objects,&_::beacons,&_::network,&_::serial,&_::topics)
 
-class LidarNode : public QObject
+class LidarNode final : public NodeBase
 {
     Q_OBJECT
 public:
@@ -104,9 +110,9 @@ public:
     };
     Q_ENUM(ModelFamily)
     Q_ENUM(Results)
-    const QString &baseFrameId() const override;
-    LidarNode(const NodeSettings &settings);
-    ~LidarNode();
+
+    LidarNode();
+    ~LidarNode() override;
 signals:
     void beaconFindFailed();
 private slots:
@@ -118,7 +124,7 @@ private:
     void positionCb(const bigbang_eurobot::Measure2dConstPtr &pos);
     void moveCb(const bigbang_eurobot::Move2dConstPtr &move);
     void monteCarloStateCb(const bigbang_eurobot::MonteCarloStateConstPtr &state);
-    void updateParams(const QString &name = "") override final;
+    void updateParams();
     bool checkHealth();
     bool getDeviceInfo();
     bool tuneRpmAfterScan();
@@ -148,7 +154,7 @@ private:
 
     sl::LidarScanMode m_lidarMode{};
     sensor_msgs::LaserScan m_scanMsg{};
-    LidarParams m_params{};
+    LidarParams params{};
     bool m_needsTune{false};
     ros::Subscriber m_posSub{};
     ros::Subscriber m_moveSub{};

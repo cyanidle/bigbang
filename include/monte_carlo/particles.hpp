@@ -9,6 +9,7 @@
 #include <QtGlobal>
 #include <random>
 #include <vector>
+#include "describe/describe.hpp"
 
 struct ParticlesSettings {
     int count = 2000;

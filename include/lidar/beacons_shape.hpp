@@ -1,7 +1,6 @@
-#ifndef BEACONS_SHAPE_HPP
-#define BEACONS_SHAPE_HPP
+#pragma once
 
-#include "rplidar_utils.h"
+#include "rplidar_utils.hpp"
 #include "describe/describe.hpp"
 
 struct ShapeDetection {
@@ -119,5 +118,3 @@ private:
     std::vector<const LaserObject *> m_results;
     std::vector<CoordF> m_offsets;
 };
-
-#endif // BEACONS_SHAPE_HPP

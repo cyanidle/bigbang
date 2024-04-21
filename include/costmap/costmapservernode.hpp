@@ -46,16 +46,13 @@ DESCRIBE(CostmapServerParams,
          &_::ignore_all_outside, &_::image_path, &_::costmap,
          &_::topics, &_::inflate, &_::inflate_static)
 
-class CostmapServer : public QObject
+class CostmapServer : public NodeBase
 {
     Q_OBJECT
 public:
-    CostmapServer(const NodeSettings &settings);
-    const CostmapServerParams &params() const {return m_params;}
+    CostmapServer();
     const QString &baseFrameId() const override;
     ~CostmapServer();
-public slots:
-    void updateParams(const QString &name = "") override final;
 private slots:
     void rvizPointCb(const geometry_msgs::PointStampedConstPtr &msg);
     void objectsCb(const bigbang_eurobot::MapObjectConstPtr &msg);
@@ -67,7 +64,7 @@ private:
     void initMap();
 
     nav_msgs::OccupancyGrid m_gridMsg;
-    CostmapServerParams m_params;
+    CostmapServerParams params;
     QTimer* m_updateTimer;
     Costmap<int8_t, 100> m_costmap;
     Costmap<int8_t, 100> m_currentReceived;
