@@ -33,6 +33,12 @@ from bigbang_eurobot.msg import (ArduinoCommand, PinReader,
 from bigbang_eurobot.msg import MotorParams as MotorParamsMsg
 from geometry_msgs.msg import Point
 
+class SLIP:
+    END = 0xC0
+    ESC = 0xDB
+    EscapedEND = 0xdc
+    EscapedESC = 0xdd
+
 @dataclass
 class ServiceCodes(RosparamsDataclass):
     ok: int = 11

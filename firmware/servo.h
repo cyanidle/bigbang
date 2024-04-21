@@ -1,18 +1,8 @@
 #ifndef SERVO_H
 #define SERVO_H
 
-#include <bigbang_eurobot/ServoCreateUpdate.h>
-
 struct ServosSettings
 {
-    ServosSettings(const bigbang_eurobot::ServoCreateUpdate &settings) :
-        num(settings.num),
-        channel(settings.channel),
-        speed(settings.speed),
-        minVal(settings.minVal),
-        maxVal(settings.maxVal),
-        startPercents(settings.startPercents)
-    {}
     uint8_t num;
     uint8_t channel;
     uint8_t speed;

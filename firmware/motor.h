@@ -2,7 +2,6 @@
 #define MOTOR_H
 
 #include <Arduino.h>
-#include <bigbang_eurobot/MotorParams.h>
 #include "global.h"
 
 #define MAX_PWM 255
@@ -11,13 +10,6 @@
 
 struct ShieldPinout
 {
-    ShieldPinout(int encoderA, int encoderB, int enable, int fwd, int back) :
-        encoderA(encoderA),
-        encoderB(encoderB),
-        enable(enable),
-        fwd(fwd),
-        back(back)
-    {};
     int encoderA;
     int encoderB;
     int enable;
@@ -27,43 +19,6 @@ struct ShieldPinout
 
 struct MotorParams
 {
-    MotorParams(const bigbang_eurobot::MotorParams &params) :
-        num(params.num),
-        radius(params.radius),
-        angleDegrees(params.angleDegrees),
-        propCoeff(params.propCoeff),
-        interCoeff(params.interCoeff),
-        diffCoeff(params.diffCoeff),
-        coeff(params.coeff),
-        turnMaxSpeed(params.turnMaxSpeed),
-        maxSpeed(params.maxSpeed),
-        ticksPerRotation(params.ticksPerRotation)
-    {
-    }
-    MotorParams(
-        uint8_t num,
-        float radius,
-        int angleDegrees,
-        float propCoeff,
-        float interCoeff,
-        float diffCoeff,
-        float coeff,
-        float turnMaxSpeed,
-        float maxSpeed,
-        int ticksPerRotation
-    ) :
-        num(num),
-        radius(radius),
-        angleDegrees(angleDegrees),
-        propCoeff(propCoeff),
-        interCoeff(interCoeff),
-        diffCoeff(diffCoeff),
-        coeff(coeff),
-        turnMaxSpeed(turnMaxSpeed),
-        maxSpeed(maxSpeed),
-        ticksPerRotation(ticksPerRotation)
-    {
-    }
     uint8_t num;
     float radius;
     int angleDegrees;
