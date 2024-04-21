@@ -15,6 +15,8 @@
 #include <math.h>
 #include <complex>
 #include "coord.hpp"
+#include "describe/describe.hpp"
+
 #define DEFAULT_COSTMAP_RESOLUTION 0.02
 #define DEFAULT_COSTMAP_WIDTH 102
 #define DEFAULT_COSTMAP_HEIGHT 152
@@ -55,15 +57,13 @@ inline std::vector<T> copyVectorAs(const std::vector<U> &src) {
     return std::vector<T>(src.begin(), src.end());
 }
 
-struct InflateSettings : public RosParams {
+struct InflateSettings {
     enum Algorithm {
         Linear = 0
     };
-    
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(float, robot_safe_radius, 0.20)
+    float robot_safe_radius = 0.20;
 };
+DESCRIBE(InflateSettings, &_::robot_safe_radius)
 
 template<typename T>
 class MinMax {

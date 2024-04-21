@@ -4,12 +4,14 @@
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <QtCore/QtCore>
 #include "nodebase.h"
+#include <string>
 #include "bigbang/types/costmap.hpp"
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/PointStamped.h>
 #include <bigbang_eurobot/MapObject.h>
+#include "describe/describe.hpp"
 
 struct CostmapTopics {
     std::string costmap_pub = "costmap";
@@ -18,29 +20,35 @@ struct CostmapTopics {
     std::string frame_id = "map";
     std::string child_frame_id = "costmap";
 };
+DESCRIBE(CostmapTopics,
+         &_::costmap_pub, &_::objects_sub, &_::rviz_points,
+         &_::frame_id, &_::child_frame_id)
 
 struct CostmapParams {
     int width = 101;
     int height = 151;
     float resolution = 0.02f; // m per side of pixel
 };
+DESCRIBE(CostmapParams, &_::width, &_::height, &_::resolution)
 
-struct CostmapServerParams : public RosParams
+struct CostmapServerParams
 {
-    Q_GADGET
-    IS_SERIALIZABLE  
-    SERIAL_FIELD(int, update_rate_ms, 80)
-    SERIAL_FIELD(int, keep_rviz_points_ms, 15000)
-    SERIAL_FIELD(bool, debug, true)
-    SERIAL_FIELD(bool, ignore_all_outside, true)
-    SERIAL_FIELD(QString, image_path, "~/catkin_ws/src/bigbang/config/costmap.png")
-    SERIAL_NEST(CostmapParams, costmap, DEFAULT)
-    SERIAL_NEST(CostmapTopics, topics, DEFAULT)
-    SERIAL_NEST(InflateSettings, inflate, DEFAULT)
-    SERIAL_NEST(InflateSettings, inflate_static, DEFAULT)
+    int update_rate_ms = 80;
+    int keep_rviz_points_ms = 15000;
+    bool debug = true;
+    bool ignore_all_outside = true;
+    std::string image_path = "~/bigbang/config/costmap.png";
+    CostmapParams costmap;
+    CostmapTopics topics;
+    InflateSettings inflate;
+    InflateSettings inflate_static;
 };
+DESCRIBE(CostmapServerParams,
+         &_::update_rate_ms, &_::keep_rviz_points_ms, &_::debug,
+         &_::ignore_all_outside, &_::image_path, &_::costmap,
+         &_::topics, &_::inflate, &_::inflate_static)
 
-class CostmapServer : public NodeBase
+class CostmapServer
 {
     Q_OBJECT
 public:

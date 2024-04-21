@@ -1,14 +1,11 @@
 #ifndef LIDAR_HANDLER_H
 #define LIDAR_HANDLER_H
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include <ros/ros.h>
-#include "bigbang/types/costmap.hpp"
+#include "common/costmap.hpp"
 #include "bigbang/utils/beacons_shape.hpp"
 #include "bigbang_eurobot/Measure2d.h"
 #include "bigbang_eurobot/MonteCarloState.h"
 #include "bigbang_eurobot/Move2d.h"
-#include "nodebase.h"
-#include "bigbang/types/rosparams.h"
 #include "tf/transform_broadcaster.h"
 #include "sl_lidar.h"
 #include "sensor_msgs/LaserScan.h"
@@ -16,6 +13,7 @@
 #include <boost/pool/pool_alloc.hpp>
 #include <chrono>
 #include <bigbang_eurobot/LaserBeacons.h>
+#include <ros/ros.h>
 
 #define MAX_NODES 8192UL
 

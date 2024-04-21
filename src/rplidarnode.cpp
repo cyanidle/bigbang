@@ -1,4 +1,4 @@
-#include "bigbang/nodes/rplidarnode.h"
+#include "lidar/rplidarnode.hpp"
 #include "bigbang_eurobot/MapObject.h"
 #include "pcg/pcg_random.hpp"
 #include "qthread.h"
