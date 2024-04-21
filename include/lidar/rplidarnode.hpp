@@ -1,15 +1,14 @@
-#ifndef LIDAR_HANDLER_H
-#define LIDAR_HANDLER_H
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#pragma once
+
 #include "common/costmap.hpp"
-#include "bigbang/utils/beacons_shape.hpp"
+#include "beacons_shape.hpp"
 #include "bigbang_eurobot/Measure2d.h"
 #include "bigbang_eurobot/MonteCarloState.h"
 #include "bigbang_eurobot/Move2d.h"
 #include "tf/transform_broadcaster.h"
 #include "sl_lidar.h"
 #include "sensor_msgs/LaserScan.h"
-#include "bigbang/utils/rplidar_utils.h"
+#include "rplidar_utils.h"
 #include <boost/pool/pool_alloc.hpp>
 #include <chrono>
 #include <bigbang_eurobot/LaserBeacons.h>
@@ -76,7 +75,7 @@ DESCRIBE(LidarParams,
     &_::lidar_x_offset,&_::lidar_y_offset,&_::range_correction,&_::source_id,
     &_::scan_mode,&_::objects,&_::beacons,&_::network,&_::serial,&_::topics)
 
-class LidarNode : public NodeBase
+class LidarNode : public QObject
 {
     Q_OBJECT
 public:
@@ -172,5 +171,3 @@ private:
     float m_timeMonteBad{0};
     bool m_shouldGlobalLocalize{false};
 };
-
-#endif

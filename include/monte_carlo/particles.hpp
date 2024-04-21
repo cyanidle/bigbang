@@ -1,13 +1,10 @@
-#ifndef PARTICLES_HPP
-#define PARTICLES_HPP
+#pragma once
 
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include "bigbang/types/rosparams.h"
-#include "bigbang/utils/measurement_utils.hpp"
+#include "measurement_utils.hpp"
 #include "sensor_msgs/PointCloud.h"
 #include "bigbang_eurobot/LaserBeacons.h"
-#include <bigbang/types/coord.hpp>
-#include <bigbang/types/position.hpp>
+#include <common/coord.hpp>
+#include <common/position.hpp>
 #include "pcg/pcg_random.hpp"
 #include <QtGlobal>
 #include <random>
@@ -214,4 +211,3 @@ private:
     std::uniform_real_distribution<float> uniform_th;
 };
 
-#endif

@@ -1,10 +1,9 @@
-#ifndef MEASUREMENT_UTILS_HPP
-#define MEASUREMENT_UTILS_HPP
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#pragma once
+
 #include <opencv2/core.hpp>
 #include <ros/ros.h>
-#include <bigbang/types/coord.hpp>
-#include <bigbang/types/position.hpp>
+#include <common/coord.hpp>
+#include <common/position.hpp>
 
 using VecT = cv::Vec<float, 3>;
 using CovT = cv::Matx<float, 3, 3>;
@@ -54,4 +53,3 @@ void fillDiagOf(cv::Matx<T, n, n> &mat, T value) {
     }
 }
 
-#endif

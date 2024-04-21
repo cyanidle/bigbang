@@ -1,8 +1,6 @@
 #ifndef RPLIDAR_UTILS_H
 #define RPLIDAR_UTILS_H
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include "bigbang/types/position.hpp"
-#include "bigbang/types/rosparams.h"
+#include "common/position.hpp"
 #include "ros/console.h"
 #include "sl_lidar.h"
 #include <QObject>
@@ -96,22 +94,24 @@ struct LaserObject {
     bool wasFoundLastTime{false};
 };
 
-
-struct ObjectDetection : RosParams {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(int, min_points, 3)
-    SERIAL_FIELD(int, split_each, 60)
-    SERIAL_FIELD(float, max_dist, 3.5)
-    SERIAL_FIELD(float, max_dist_between_dots, 0.05)
-    SERIAL_FIELD(float, start_ttl, 800)
-    SERIAL_FIELD(float, map_ttl_coeff, 0.8)
-    SERIAL_FIELD(float, max_deviation, 0.02) // m
-    SERIAL_FIELD(float, max_x, 5) // m
-    SERIAL_FIELD(float, min_x, -3) // m
-    SERIAL_FIELD(float, max_y, 6) // m
-    SERIAL_FIELD(float, min_y, -3) // m
+struct ObjectDetection {
+    int min_points = 3;
+    int split_each = 60;
+    float max_dist = 3.5;
+    float max_dist_between_dots = 0.05;
+    float start_ttl = 800;
+    float map_ttl_coeff = 0.8;
+    float max_deviation = 0.02; // m
+    float max_x = 5; // m
+    float min_x = -3; // m
+    float max_y = 6; // m
+    float min_y = -3; // m
 };
+DESCRIBE(ObjectDetection,
+    &_::min_points, &_::split_each, &_::max_dist, &_::max_dist_between_dots, 
+    &_::start_ttl, &_::map_ttl_coeff, &_::max_deviation,
+    &_::max_x, &_::min_x, &_::max_y, &_::min_y
+)
 
 struct LaserBeacon {
     LaserBeacon(float targetHz, const CoordF &targetPos, int id) :

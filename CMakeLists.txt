@@ -29,6 +29,8 @@ find_package(catkin COMPONENTS
   sensor_msgs
 )
 
+message(STATUS "Found catkin: ${catkin_FOUND}")
+
 if (catkin_FOUND)
   catkin_python_setup()
   add_message_files(
@@ -94,54 +96,40 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pthread")
 set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS}")
 set(CMAKE_AUTOMOC ON)
 
-add_library(Types STATIC
-  include/bigbang/types/coord.hpp
-  include/bigbang/types/position.hpp
-  include/bigbang/types/costmap.hpp
-  include/bigbang/types/rosparams.cpp
-  include/bigbang/types/serializer.hpp #needs to be added, so moc gets linked
-)
-target_include_directories(Types PUBLIC
-  ${CMAKE_SOURCE_DIR}/include
+add_library(bigbang-common INTERFACE)
+target_include_directories(bigbang-common INTERFACE
+  include
   ${catkin_INCLUDE_DIRS}
   ${Qt5Core_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ${radapter_broker_INCLUDE_DIRS}
 )
-target_link_libraries(Types PUBLIC
-  describe pcg
-  ${catkin_LIBRARIES}
+target_compile_definitions(bigbang-common INTERFACE 
+  BOOST_BIND_GLOBAL_PLACEHOLDERS
 )
-add_library(nodebase STATIC
-  include/bigbang/nodes/nodebase.cpp
-)
-target_link_libraries(nodebase PUBLIC
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  Qt5::Core
-  Types
+target_link_libraries(bigbang-common INTERFACE
+  describe pcg ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} Qt5::Core
 )
 
 add_executable(costmap_server
   src/costmapservernode.cpp
 )
-target_link_libraries(costmap_server PRIVATE nodebase)
+target_link_libraries(costmap_server PRIVATE bigbang-common)
 
 add_executable(monte_carlo
   src/monte_carlo.cpp
 )
-target_link_libraries(monte_carlo PRIVATE nodebase)
+target_link_libraries(monte_carlo PRIVATE bigbang-common)
 
 add_executable(global_planer
   src/globalplanernode.cpp
 )
-target_link_libraries(global_planer PRIVATE nodebase)
+target_link_libraries(global_planer PRIVATE bigbang-common)
 
 add_executable(bigbang_rplidar
   src/rplidarnode.cpp
 )
 
-target_link_libraries(bigbang_rplidar PRIVATE nodebase bigbang_rplidar_sdk)
+target_link_libraries(bigbang_rplidar PRIVATE bigbang-common bigbang-rplidar-sdk)
 
 if (catkin_FOUND)
   install(DIRECTORY launch nodes

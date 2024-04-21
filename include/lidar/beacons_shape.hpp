@@ -1,7 +1,6 @@
 #ifndef BEACONS_SHAPE_HPP
 #define BEACONS_SHAPE_HPP
 
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "rplidar_utils.h"
 #include "describe/describe.hpp"
 

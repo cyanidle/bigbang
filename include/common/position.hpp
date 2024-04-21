@@ -1,8 +1,7 @@
 #ifndef POSITION_HPP
 #define POSITION_HPP
 
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include "bigbang/types/coord.hpp"
+#include "coord.hpp"
 #include "opencv2/core/matx.hpp"
 #include <QtGlobal>
 #include <complex.h>

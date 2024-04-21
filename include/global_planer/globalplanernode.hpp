@@ -1,16 +1,15 @@
 #ifndef GLOBAL_PLANER_NODE
 #define GLOBAL_PLANER_NODE
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-#include "bigbang/types/costmap.hpp"
-#include "bigbang/types/rosparams.h"
-#include "bigbang/types/cachedgraph.hpp"
+
+#include <QObject>
+#include "common/costmap.hpp"
+#include "cachedgraph.hpp"
 #include <unordered_set>
 #include "bigbang_eurobot/Measure2d.h"
 #include "bigbang_eurobot/PlanerStatus.h"
 #include <algorithm>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Path.h>
-#include "nodebase.h"
 #include <std_msgs/Empty.h>
 #include "tf/transform_broadcaster.h"
 #include <geometry_msgs/Point.h>
@@ -42,53 +41,51 @@ struct PlanerNode
 };
 Q_DECLARE_TYPEINFO(PlanerNode, Q_MOVABLE_TYPE);
 
-struct AStarParams : public RosParams
+struct AStarParams
 {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(double, costmap_to_node_cost_coeff, 5)
-    SERIAL_FIELD(double, cell_cost, 10)
-    SERIAL_FIELD(double, diagonal_coeff, 1.25)
-    SERIAL_FIELD(int, max_cost, 35)
+    double costmap_to_node_cost_coeff = 5;
+    double cell_cost = 10;
+    double diagonal_coeff = 1.25;
+    int max_cost = 35;
 };
+DESCRIBE(AStarParams, 
+    &_::costmap_to_node_cost_coeff,&_::cell_cost,
+    &_::diagonal_coeff,&_::max_cost)
 
-struct GlobalPlanerTopics : public RosParams
+struct GlobalPlanerTopics
 {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_FIELD(QString, position_sub, "filtered_pos")
-    SERIAL_FIELD(QString, costmap_sub, "costmap")
-    SERIAL_FIELD(QString, rviz_target_sub, "move_base_simple/goal")
-    SERIAL_FIELD(QString, target_sub, "global_planer/target")
-    SERIAL_FIELD(QString, cancel_sub, "global_planer/cancel")
-    SERIAL_FIELD(QString, local_planer_status_sub, "planer_status")
-    SERIAL_FIELD(QString, path_out_pub, "global_plan")
-    SERIAL_FIELD(QString, frame_id, "costmap")
-    SERIAL_FIELD(QString, child_frame_id, "global_plan")
+    std::string position_sub = "filtered_pos";
+    std::string costmap_sub = "costmap";
+    std::string rviz_target_sub = "move_base_simple/goal";
+    std::string target_sub = "global_planer/target";
+    std::string cancel_sub = "global_planer/cancel";
+    std::string local_planer_status_sub = "planer_status";
+    std::string path_out_pub = "global_plan";
+    std::string frame_id = "costmap";
+    std::string child_frame_id = "global_plan";
 };
+DESCRIBE(GlobalPlanerTopics, 
+    &_::position_sub, &_::costmap_sub, &_::rviz_target_sub, &_::target_sub,
+    &_::cancel_sub, &_::local_planer_status_sub, &_::path_out_pub, &_::frame_id, &_::child_frame_id)
 
-struct GlobalPlanerParams : public RosParams
+struct GlobalPlanerParams
 {
-    Q_GADGET
-    IS_SERIALIZABLE
-    SERIAL_NEST(AStarParams, a_star_params, DEFAULT)
-    SERIAL_FIELD(int, nodes_batch_size, 10000)
-    SERIAL_FIELD(int, reserve_in_path_size, 60)
-    SERIAL_FIELD(bool, enable_rviz_target, true)
-    SERIAL_FIELD(double, update_time, 0.05)
-    SERIAL_FIELD(int, max_points, 2000)
-    SERIAL_FIELD(double, consider_reached_after, 1.5)
-    SERIAL_FIELD(double, delay_between_fails, 0.05)
-    SERIAL_FIELD(int, max_fails_before_abort, 3)
-    SERIAL_FIELD(int, min_time_for_target, 0.5)
-    SERIAL_NEST(GlobalPlanerTopics, topics, DEFAULT)
-    SERIAL_POST_INIT(postInit);
-    
-    quint32 _nodes_batch_size;
-    void postInit() {
-        _nodes_batch_size = static_cast<quint32>(nodes_batch_size);
-    }
+    AStarParams a_star_params;
+    int nodes_batch_size = 10000;
+    int reserve_in_path_size = 60;
+    bool enable_rviz_target = true;
+    double update_time = 0.05;
+    int max_points = 2000;
+    double consider_reached_after = 1.5;
+    double delay_between_fails = 0.05;
+    int max_fails_before_abort = 3;
+    int min_time_for_target = 0.5;
+    GlobalPlanerTopics topics;
 };
+DESCRIBE(GlobalPlanerParams, 
+    &_::a_star_params, &_::nodes_batch_size, &_::reserve_in_path_size, &_::enable_rviz_target, 
+    &_::update_time, &_::max_points, &_::consider_reached_after, &_::delay_between_fails,
+    &_::max_fails_before_abort, &_::min_time_for_target, &_::topics)
 
 struct TargetStatus
 {
@@ -100,7 +97,7 @@ struct TargetStatus
     }
 };
 
-class GlobalPlaner : public NodeBase
+class GlobalPlaner : public QObject
 {
     Q_OBJECT
 public: 

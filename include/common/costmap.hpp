@@ -1,14 +1,10 @@
 #ifndef COSTMAP_TYPE_H
 #define COSTMAP_TYPE_H
 
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
-
 #define COSTMAP_ALWAYS_INLINE 0
-
 
 #include <ros/ros.h>
 #include <limits>
-#include "rosparams.h"
 #include "opencv2/core/matx.hpp"
 #include <QtGlobal>
 #include <type_traits>

@@ -1,7 +1,6 @@
 #ifndef COORD_H
 #define COORD_H
 
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include "opencv2/core/matx.hpp"
 #include <QtGlobal>
 #include <complex.h>

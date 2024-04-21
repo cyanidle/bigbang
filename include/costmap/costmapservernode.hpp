@@ -1,11 +1,9 @@
 #ifndef COSTMAP_SERVER_H
 #define COSTMAP_SERVER_H
 
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <QtCore/QtCore>
-#include "nodebase.h"
 #include <string>
-#include "bigbang/types/costmap.hpp"
+#include "common/costmap.hpp"
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -48,7 +46,7 @@ DESCRIBE(CostmapServerParams,
          &_::ignore_all_outside, &_::image_path, &_::costmap,
          &_::topics, &_::inflate, &_::inflate_static)
 
-class CostmapServer
+class CostmapServer : public QObject
 {
     Q_OBJECT
 public:

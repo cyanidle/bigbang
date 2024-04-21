@@ -66,7 +66,7 @@ DESCRIBE(MonteCalroTopics,
     &_::start_theta,&_::send_particles,&_::resample_on_measure, 
     &_::discard_after_bad_for,&_::decomposition_alg)
 
-class MonteCarlo : public NodeBase
+class MonteCarlo : public QObject
 {
     Q_OBJECT
 public:
