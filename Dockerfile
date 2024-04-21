@@ -1,8 +1,10 @@
-# This is an auto generated Dockerfile for ros:ros-core
-# generated from docker_images/create_ros_core_image.Dockerfile.em
-FROM ros:noetic AS core
-
-RUN apt-get update && apt-get install -q -y \
-    ros-noetic-desktop \
-    && rm -rf /var/lib/apt/lists/*
-
+FROM osrf/ros:noetic-desktop as base
+WORKDIR /catkin_ws/src
+RUN apt update && apt install -q -y \
+    ros-noetic-rosserial-arduino && \
+    rm -rf /var/lib/apt/lists/*
+RUN bash -c "source /ros_entrypoint.sh && \
+    catkin_init_workspace && \
+    cd .. && catkin_make"
+WORKDIR /catkin_ws
+ENTRYPOINT [ "/ros_entrypoint.sh" ]

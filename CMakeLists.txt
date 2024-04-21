@@ -11,6 +11,7 @@ endif()
 
 add_subdirectory(submodule/describe)
 add_subdirectory(submodule/pcg)
+add_subdirectory(submodule/lidar-sdk)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib
