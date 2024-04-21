@@ -13,7 +13,7 @@ add_subdirectory(submodule/describe)
 add_subdirectory(submodule/pcg)
 add_subdirectory(submodule/lidar-sdk)
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin COMPONENTS
   actionlib
   nav_msgs
   roscpp
@@ -29,61 +29,60 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-catkin_python_setup()
-
-add_message_files(
+if (catkin_FOUND)
+  catkin_python_setup()
+  add_message_files(
+      FILES
+        ArduinoCommand.msg
+        MotorInfo.msg
+        MotorParams.msg
+        ServoCreateUpdate.msg
+        PinReader.msg
+        PinReaderResponce.msg
+        Move2d.msg
+        Measure2d.msg
+        Reconfigure.msg
+        RawImu.msg
+        ServoCommand.msg
+        MapObject.msg
+        PlanerStatus.msg
+        LaserBeacon.msg
+        LaserBeacons.msg
+        MonteCarloState.msg
+        ArduinoStatus.msg
+        ArduinoLed.msg
+    )
+  
+  add_service_files(
     FILES
-      ArduinoCommand.msg
-      MotorInfo.msg
-      MotorParams.msg
-      ServoCreateUpdate.msg
-      PinReader.msg
-      PinReaderResponce.msg
-      Move2d.msg
-      Measure2d.msg
-      Reconfigure.msg
-      RawImu.msg
-      ServoCommand.msg
-      MapObject.msg
-      PlanerStatus.msg
-      LaserBeacon.msg
-      LaserBeacons.msg
-      MonteCarloState.msg
-      ArduinoStatus.msg
-      ArduinoLed.msg
+      ExecuteScript.srv
+      DirectMove.srv
+      DirectDrift.srv
   )
-
-add_service_files(
-  FILES
-    ExecuteScript.srv
-    DirectMove.srv
-    DirectDrift.srv
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs nav_msgs sensor_msgs actionlib_msgs
-)
-catkin_package(
-  #INCLUDE_DIRS ${INCLUDE_DIRECTORIES}
-  CATKIN_DEPENDS python3-numpy map_msgs geometry_msgs 
-  nav_msgs roscpp rospy rosserial_arduino sensor_msgs 
-  std_msgs message_runtime python3-pyyaml python3-asyncio
-  #DEPENDS 
-)
-
-add_subdirectory(include/lidar)
-
-catkin_install_python(PROGRAMS
-  nodes/arduino_interface.py
-  nodes/local_planer.py
-  nodes/task_manager.py
-  nodes/interconnect.py
-  nodes/scripts_executor.py
-  nodes/gui.py
-  # ^ Place node scripts here
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+  
+  generate_messages(
+    DEPENDENCIES
+    std_msgs nav_msgs sensor_msgs actionlib_msgs
+  )
+  catkin_package(
+    #INCLUDE_DIRS ${INCLUDE_DIRECTORIES}
+    CATKIN_DEPENDS python3-numpy map_msgs geometry_msgs 
+    nav_msgs roscpp rospy rosserial_arduino sensor_msgs 
+    std_msgs message_runtime python3-pyyaml python3-asyncio
+    #DEPENDS 
+  )
+  
+  catkin_install_python(PROGRAMS
+    nodes/arduino_interface.py
+    nodes/local_planer.py
+    nodes/task_manager.py
+    nodes/interconnect.py
+    nodes/scripts_executor.py
+    nodes/gui.py
+    # ^ Place node scripts here
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  )
+endif()
 
 find_package(Qt5 REQUIRED COMPONENTS Core)
 find_package(Boost REQUIRED COMPONENTS system)
@@ -123,38 +122,30 @@ target_link_libraries(nodebase PUBLIC
   Types
 )
 
-
 add_executable(costmap_server
-  include/bigbang/nodes/costmapservernode.h
   src/costmapservernode.cpp
 )
 target_link_libraries(costmap_server PRIVATE nodebase)
 
 add_executable(monte_carlo
-  include/bigbang/utils/measurement_utils.hpp
-  include/bigbang/utils/particles.hpp
-  include/bigbang/nodes/monte_carlo.h
   src/monte_carlo.cpp
 )
 target_link_libraries(monte_carlo PRIVATE nodebase)
 
 add_executable(global_planer
-  include/bigbang/nodes/globalplanernode.h
   src/globalplanernode.cpp
 )
 target_link_libraries(global_planer PRIVATE nodebase)
 
 add_executable(bigbang_rplidar
-  include/bigbang/utils/beacons_shape.hpp
-  include/bigbang/utils/rplidar_utils.h
-  include/bigbang/utils/rplidar_utils.cpp
-  include/bigbang/nodes/rplidarnode.h
   src/rplidarnode.cpp
 )
 
 target_link_libraries(bigbang_rplidar PRIVATE nodebase bigbang_rplidar_sdk)
 
-install(DIRECTORY launch nodes
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  USE_SOURCE_PERMISSIONS
-)
+if (catkin_FOUND)
+  install(DIRECTORY launch nodes
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+    USE_SOURCE_PERMISSIONS
+  )
+endif()
