@@ -126,16 +126,19 @@ target_link_libraries(bigbang-common PUBLIC
 )
 
 add_executable(costmap_server
+  include/costmap/costmapservernode.hpp
   src/costmapservernode.cpp
 )
 target_link_libraries(costmap_server PRIVATE bigbang-common)
 
 add_executable(monte_carlo
+  include/monte_carlo/monte_carlo.hpp
   src/monte_carlo.cpp
 )
 target_link_libraries(monte_carlo PRIVATE bigbang-common)
 
 add_executable(global_planer
+  include/global_planer/globalplanernode.hpp
   src/globalplanernode.cpp
 )
 target_link_libraries(global_planer PRIVATE bigbang-common)

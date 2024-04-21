@@ -3,57 +3,46 @@
 
 using namespace bigbang_eurobot;
 using namespace cv;
-GlobalPlaner::GlobalPlaner(const NodeSettings &settings) :
-    NodeBase(settings),
-    m_graph(m_params._nodes_batch_size),
-    m_updatePathTimer(new QTimer(this)),
+
+GlobalPlaner::GlobalPlaner() :
+    m_graph(params.nodes_batch_size),
+    m_updatePathTimer(new QTimer(this))
 {
-    updateParamsImpl();
+    updateParams();
     connect(this, &GlobalPlaner::planningFailed, &GlobalPlaner::onPlanningFailed);
-}
-
-
-void GlobalPlaner::updateParamsImpl(const QString &name)
-{
-    m_params.update(name);
-    m_updatePathTimer->start(m_params.update_time * 1000);
-    m_updatePathTimer->callOnTimeout(this, &GlobalPlaner::update);
-    m_positionSub = nh()->subscribe(m_params.topics.position_sub.toStdString(), 20, &GlobalPlaner::positionCb, this);
-    m_cancelSub = nh()->subscribe(m_params.topics.cancel_sub.toStdString(), 20, &GlobalPlaner::cancelTarget, this);
-    m_costmapSub = nh()->subscribe(m_params.topics.costmap_sub.toStdString(), 20, &GlobalPlaner::costmapCb, this);
-    m_rvizTargetSub = nh()->subscribe(m_params.topics.rviz_target_sub.toStdString(), 20, &GlobalPlaner::rvizTargetCb, this);
-    m_targetSub = nh()->subscribe(m_params.topics.target_sub.toStdString(), 20, &GlobalPlaner::targetCb, this);
-    m_statusSub = nh()->subscribe(m_params.topics.local_planer_status_sub.toStdString(), 20, &GlobalPlaner::statusCb, this);
-    m_pathPub = nh()->advertise<nav_msgs::Path>(m_params.topics.path_out_pub.toStdString(), 20);
-    m_tfMsg.child_frame_id = m_params.topics.child_frame_id.toStdString();
-    m_tfMsg.header.frame_id = m_params.topics.frame_id.toStdString();
-    m_tfMsg.transform.rotation = msgFromTheta(0);
-    m_pathMsg.header.frame_id = m_params.topics.child_frame_id.toStdString().c_str();
-    m_pathMsg.poses.reserve(m_params.reserve_in_path_size);
-    m_graph.updateBatchSize(m_params.nodes_batch_size);
-    m_open.reserve(m_params.nodes_batch_size);
-    m_covered.reserve(m_params.nodes_batch_size);
 }
 
 void GlobalPlaner::statusCb(const PlanerStatusConstPtr &msg)
 {
     if (!m_targetStatus.canceled &&
-        m_timeSinceNewTarget > m_params.min_time_for_target &&
-        msg->idle_for >= m_params.consider_reached_after)
+        m_timeSinceNewTarget > params.min_time_for_target &&
+        msg->idle_for >= params.consider_reached_after)
     {
         ROS_WARN("Global planer finished work!");
         cancelTarget();
     }
 }
 
-void GlobalPlaner::updateParams(const QString &name)
+void GlobalPlaner::updateParams()
 {
-    updateParamsImpl(name);
-}
-
-const QString &GlobalPlaner::baseFrameId() const
-{
-    return m_params.topics.frame_id;
+    DeserializeFromRos(params);
+    m_updatePathTimer->start(params.update_time * 1000);
+    m_updatePathTimer->callOnTimeout(this, &GlobalPlaner::update);
+    m_positionSub = nh()->subscribe(params.topics.position_sub, 20, &GlobalPlaner::positionCb, this);
+    m_cancelSub = nh()->subscribe(params.topics.cancel_sub, 20, &GlobalPlaner::cancelTarget, this);
+    m_costmapSub = nh()->subscribe(params.topics.costmap_sub, 20, &GlobalPlaner::costmapCb, this);
+    m_rvizTargetSub = nh()->subscribe(params.topics.rviz_target_sub, 20, &GlobalPlaner::rvizTargetCb, this);
+    m_targetSub = nh()->subscribe(params.topics.target_sub, 20, &GlobalPlaner::targetCb, this);
+    m_statusSub = nh()->subscribe(params.topics.local_planer_status_sub, 20, &GlobalPlaner::statusCb, this);
+    m_pathPub = nh()->advertise<nav_msgs::Path>(params.topics.path_out_pub, 20);
+    m_tfMsg.child_frame_id = params.topics.child_frame_id;
+    m_tfMsg.header.frame_id = params.topics.frame_id;
+    m_tfMsg.transform.rotation = msgFromTheta(0);
+    m_pathMsg.header.frame_id = params.topics.child_frame_id.c_str();
+    m_pathMsg.poses.reserve(params.reserve_in_path_size);
+    m_graph.updateBatchSize(params.nodes_batch_size);
+    m_open.reserve(params.nodes_batch_size);
+    m_covered.reserve(params.nodes_batch_size);
 }
 
 void GlobalPlaner::onPlanningFailed()
@@ -118,7 +107,7 @@ quint32 GlobalPlaner::getBestOpenIndex()
 
 void GlobalPlaner::update()
 {
-    m_timeSinceNewTarget+=m_params.update_time;
+    m_timeSinceNewTarget+=params.update_time;
     if (m_targetStatus.canceled) return;
     m_graph.reset();
     m_covered.clear();
@@ -129,7 +118,7 @@ void GlobalPlaner::update()
     spawnChildren(0);
     while (!m_targetStatus.reached && !m_targetStatus.canceled) {
         auto minCost = getBestOpenIndex();
-        if (!minCost || m_currentCount++>=m_params.max_points) {
+        if (!minCost || m_currentCount++>=params.max_points) {
             m_targetStatus.canceled = true;
             break;   
         }
@@ -192,7 +181,7 @@ void GlobalPlaner::publishPath()
 
 void GlobalPlaner::walkGraphBackwards()
 {
-    auto frameId = m_params.topics.child_frame_id.toStdString();
+    auto frameId = params.topics.child_frame_id;
     auto *node = &lastNode();
     auto endTheta = node->theta;
     auto startTheta = graphAt(0).theta;
@@ -224,7 +213,7 @@ void GlobalPlaner::walkGraphBackwards()
 
 void GlobalPlaner::rvizTargetCb(const geometry_msgs::PoseStampedConstPtr &msg)
 {
-    if (m_params.enable_rviz_target) {
+    if (params.enable_rviz_target) {
         newTarget(msg->pose.position.x, msg->pose.position.y, thetaFromMsg(msg->pose.orientation));
     }
 }

@@ -1,6 +1,5 @@
 #include "common/nodebase.hpp"
 #include <QThread>
-#include <QTimer>
 
 NodeBase::NodeBase() {
     thread()->setPriority(QThread::HighPriority);

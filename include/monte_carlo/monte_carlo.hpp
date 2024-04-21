@@ -1,8 +1,8 @@
 #ifndef MONTE_CARLO_H
 #define MONTE_CARLO_H
 
+#include "common/nodebase.hpp"
 #include "particles.hpp"
-#include "describe/describe.hpp"
 #include "bigbang_eurobot/LaserBeacons.h"
 #include "bigbang_eurobot/Move2d.h"
 #include "bigbang_eurobot/MonteCarloState.h"
@@ -11,6 +11,7 @@
 #include "std_srvs/Empty.h"
 #include "sensor_msgs/PointCloud.h"
 #include <QQueue>
+#include <boost/unordered_map.hpp>
 
 struct MonteCalroTopics
 {
@@ -36,7 +37,7 @@ DESCRIBE(MonteCalroTopics,
 struct OutputMsgsParams {
     int move_source_id = 10;
 };
-DESCRIBE(OutputMsgsParams, move_source_id)
+DESCRIBE(OutputMsgsParams, &_::move_source_id)
 
 struct DensityParams {
     float ok_level = 0.8;
@@ -58,22 +59,22 @@ struct MonteCarloParams {
     bool send_particles = true;
     bool resample_on_measure = true;
     double discard_after_bad_for = 3.5;
-    cv::DecompTypes decomposition_alg{cv::DECOMP_CHOLESKY};
+    cv::DecompTypes decomposition_alg = cv::DECOMP_CHOLESKY; //not-described
 };
-DESCRIBE(MonteCalroTopics, 
+
+DESCRIBE(MonteCarloParams, 
     &_::density, &_::topics, &_::particles,
     &_::outputs, &_::max_uncertainty, &_::min_uncertainty,
     &_::time_step, &_::start_x, &_::start_y, 
     &_::start_theta,&_::send_particles,&_::resample_on_measure, 
-    &_::discard_after_bad_for,&_::decomposition_alg)
+    &_::discard_after_bad_for)
 
-class MonteCarlo : public NodeBase
+class MonteCarlo final : public NodeBase
 {
     Q_OBJECT
 public:
-    MonteCarlo(const NodeSettings &settings);
-    void updateParams(const QString &name = "") override final;
-    const QString &baseFrameId() const override final;
+    MonteCarlo();
+    void updateParams();
 private:
     void applyMovesStep();
     void moveCb(const bigbang_eurobot::Move2dConstPtr &msg);
@@ -84,10 +85,10 @@ private:
     bool discardBelief(std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &resp);
     bool returnToStart(std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &resp);
 
-    MonteCarloParams m_params;
+    MonteCarloParams params;
     Particles m_particles;
     QTimer *m_updateTimer;
-    QHash<quint16, MeasurePair> m_currentMoves;
+    boost::unordered_map<quint16, MeasurePair> m_currentMoves;
     ros::Subscriber m_moveSub;
     ros::Subscriber m_measureSub;
     ros::Subscriber m_rvizInitialSub;

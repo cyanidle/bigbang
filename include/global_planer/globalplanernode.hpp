@@ -2,6 +2,7 @@
 #define GLOBAL_PLANER_NODE
 
 #include <QObject>
+#include "common/nodebase.hpp"
 #include "common/costmap.hpp"
 #include "cachedgraph.hpp"
 #include <unordered_set>
@@ -97,14 +98,12 @@ struct TargetStatus
     }
 };
 
-class GlobalPlaner : public NodeBase
+class GlobalPlaner final : public NodeBase
 {
     Q_OBJECT
 public: 
-    GlobalPlaner(const NodeSettings &settings);
-    const GlobalPlanerParams &params() const {return m_params;}
-    void updateParams(const QString &name = "") override;
-    const QString &baseFrameId() const override;
+    GlobalPlaner();
+    void updateParams();
 signals:
     void planningFailed();
     void planningSuccess();
@@ -143,10 +142,9 @@ private:
     inline quint32 append(U&& node) {
         return m_graph.append(std::forward<U>(node));
     }
-    inline const AStarParams &aStar() const {return m_params.a_star_params;}
-    void updateParamsImpl(const QString &name = {});
+    inline const AStarParams &aStar() const {return params.a_star_params;}
 
-    GlobalPlanerParams m_params;
+    GlobalPlanerParams params;
     CachedGraph<PlanerNode> m_graph;
     ros::Subscriber m_positionSub;
     ros::Subscriber m_costmapSub;

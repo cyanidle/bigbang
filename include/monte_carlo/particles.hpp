@@ -186,10 +186,9 @@ protected:
         m_particles.swap(m_particles2);
     }
     void randomizeParticles() noexcept {
-        engine.seed(std::random_device()());
         m_currentMedian = {};
         for (auto &pos : m_particles) {
-            pos = PositionF(uniform_x(engine), uniform_y(engine), uniform_th(engine));
+            pos = PositionF(uniform_x(fast_engine), uniform_y(fast_engine), uniform_th(fast_engine));
             m_currentMedian += pos;
         }
         m_currentMedian /= m_settings.count;

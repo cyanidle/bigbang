@@ -3,14 +3,9 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <chrono>
-#include "common/nodebase.hpp"
-#include "common/deserialize.hpp"
 #include <tf/LinearMath/Quaternion.h>
 
 using namespace cv;
-
-void CostmapServer::updateParams(const QString &name) {
-}
 
 
 void CostmapServer::objectsCb(const bigbang_eurobot::MapObjectConstPtr &msg)
@@ -40,9 +35,9 @@ CostmapServer::CostmapServer():
 { 
     DeserializeFromRos(params);
     m_updateTimer->setInterval(params.update_rate_ms);
-    m_objectsSub = nh()->subscribe(params.topics.objects_sub.toStdString(), 800, &CostmapServer::objectsCb, this);
-    m_rvizPointsSub = nh()->subscribe(params.topics.rviz_points.toStdString(), 20, &CostmapServer::rvizPointCb, this);
-    m_mapPublisher = nh()->advertise<nav_msgs::OccupancyGrid>(params.topics.costmap_pub.toStdString(), 20);
+    m_objectsSub = nh()->subscribe(params.topics.objects_sub, 800, &CostmapServer::objectsCb, this);
+    m_rvizPointsSub = nh()->subscribe(params.topics.rviz_points, 20, &CostmapServer::rvizPointCb, this);
+    m_mapPublisher = nh()->advertise<nav_msgs::OccupancyGrid>(params.topics.costmap_pub, 20);
     initMap();
     if (!m_resetRvizPoints) {
         m_resetRvizPoints = new QTimer(this);
@@ -53,8 +48,8 @@ CostmapServer::CostmapServer():
     }
     m_resetRvizPoints->setInterval(params.keep_rviz_points_ms);
     idsToRemove.reserve(100);
-    m_tfMsg.child_frame_id = params.topics.child_frame_id.toStdString();
-    m_tfMsg.header.frame_id = params.topics.frame_id.toStdString();
+    m_tfMsg.child_frame_id = params.topics.child_frame_id;
+    m_tfMsg.header.frame_id = params.topics.frame_id;
     tf::Quaternion q;
     q.setRPY(0, 0, 0);
     tf::quaternionTFToMsg(q, m_tfMsg.transform.rotation);
@@ -70,7 +65,7 @@ CostmapServer::~CostmapServer()
 
 void CostmapServer::initMap() 
 {
-    Mat rimage = imread(params.image_path.toStdString().c_str(), IMREAD_GRAYSCALE);
+    Mat rimage = imread(params.image_path.c_str(), IMREAD_GRAYSCALE);
     Mat image;
     flip(rimage, image, RotateFlags::ROTATE_180);
     if (!image.size) {
@@ -152,7 +147,7 @@ void CostmapServer::sendMap()
     if (m_inflatedCostmap.isEmpty()) {
         return;
     }
-    m_gridMsg.header.frame_id = params.topics.frame_id.toStdString();
+    m_gridMsg.header.frame_id = params.topics.frame_id;
     m_gridMsg.header.stamp = stamp;
     m_gridMsg.data = std::move(m_inflatedCostmap.data());
     m_mapPublisher.publish(m_gridMsg);   

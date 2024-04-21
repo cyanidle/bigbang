@@ -1,15 +1,12 @@
-#ifndef COSTMAP_SERVER_H
-#define COSTMAP_SERVER_H
+#pragma once
 
-#include <QtCore/QtCore>
-#include <string>
+#include "common/nodebase.hpp"
 #include "common/costmap.hpp"
+
 #include <nav_msgs/OccupancyGrid.h>
-#include <tf/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/PointStamped.h>
 #include <bigbang_eurobot/MapObject.h>
-#include "describe/describe.hpp"
 
 struct CostmapTopics {
     std::string costmap_pub = "costmap";
@@ -51,7 +48,6 @@ class CostmapServer : public NodeBase
     Q_OBJECT
 public:
     CostmapServer();
-    const QString &baseFrameId() const override;
     ~CostmapServer();
 private slots:
     void rvizPointCb(const geometry_msgs::PointStampedConstPtr &msg);
@@ -81,4 +77,4 @@ private:
     boost::unordered_map<int, boost::unordered_map<int, bigbang_eurobot::MapObject>> m_objects;
     std::vector<int> idsToRemove{};
 };
-#endif // COSTMAP_SERVER_H
+

@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QObject>
+#include <QTimer>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 
