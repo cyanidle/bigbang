@@ -1,6 +1,9 @@
 <launch>
     <arg name="debug" default="false"/>
     
+    <arg name="use_params_file" default="true"/>
+    <arg name="params_file" default="~/bigbang/params.yaml"/>
+    
     <arg name="lidar_connected" default="true"/>
     <arg name="lidar_test_mode" default="false"/>
     
@@ -27,6 +30,10 @@
     <arg name="launch_gui" default="true"/>
     <arg name="round_side" default="blue"/>
     <arg name="allow_debug_complete" default="false"/>
+
+    <group if="$(arg use_params_file)">  
+        <rosparam file="$(arg params_file)"/>
+    </group>
 
     <group if="$(arg launch_rviz)">  
         <include file="$(find bigbang_eurobot)/launch/rviz.launch">
