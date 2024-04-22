@@ -2,7 +2,7 @@
     <arg name="debug" default="false"/>
     
     <arg name="use_params_file" default="true"/>
-    <arg name="params_file" default="~/bigbang/params.yaml"/>
+    <arg name="params_file" default="$(env HOME)/bigbang/params.yaml"/>
     
     <arg name="lidar_connected" default="true"/>
     <arg name="lidar_test_mode" default="false"/>
@@ -22,8 +22,8 @@
 
     <arg name="rviz_source_of_robot_pos" default="filtered_pos"/>
     
-    <arg name="scripts_file" default="scripts"/>
-    <arg name="route_file" default="blue"/>
+    <arg name="scripts_file" default="$(env HOME)/bigbang/scripts.yaml"/>
+    <arg name="route_file" default="$(env HOME)/bigbang/route.yaml"/>
     <arg name="start_x" default="1"/>
     <arg name="start_y" default="1"/>
     <arg name="start_theta" default="0"/>

@@ -1,7 +1,7 @@
 <launch>
     <arg name="debug" default="false"/>
-    <arg name="scripts_file" default="~/bigbang/scripts.yaml"/>
-    <arg name="route_file" default="blue"/>
+    <arg name="scripts_file" default="$(env HOME)/bigbang/scripts.yaml"/>
+    <arg name="route_file" default="$(env HOME)/bigbang/route.yaml"/>
     <arg name="launch_scripts" default="true"/>
     <arg name="launch_tasks" default="true"/>
     <arg name="allow_debug_complete" default="false"/>
@@ -11,7 +11,7 @@
         <node pkg="bigbang_eurobot" type="task_manager.py" name="task_manager" output="screen" respawn="true" respawn_delay="1"> 
             <param name = "debug" value = "$(arg debug)"/>
             <param name = "allow_debug_connect" value = "false"/>
-            <param name = "file" value = "$(find bigbang_eurobot)/config/routes/$(arg robot_name)/$(arg route_file).yaml"/>
+            <param name = "file" value = "$(arg route_file)"/>
         </node>
     </group>
 
@@ -21,7 +21,7 @@
             <param name = "debug" value = "$(arg debug)"/>
             <param name = "allow_debug_connect" value = "false"/>
             <param name = "allow_debug_complete" value="$(arg allow_debug_complete)"/>
-            <param name = "file" value = "$(find bigbang_eurobot)/config/$(arg robot_name)/$(arg scripts_file).yaml"/>
+            <param name = "file" value = "$(arg scripts_file)"/>
         </node>
     </group>
 

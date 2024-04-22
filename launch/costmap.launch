@@ -3,7 +3,7 @@
 
     <node pkg="bigbang_eurobot" type="costmap_server" name="costmap_server" output="screen" respawn="true" respawn_delay="1"> 
         <param name = "debug" value = "$(arg debug)"/>
-        <param name = "image_path" value = "~/bigbang/costmap.png"/>
+        <param name = "image_path" value = "$(env HOME)/bigbang/costmap.png"/>
     </node>
 
 </launch>
