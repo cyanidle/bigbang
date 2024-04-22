@@ -16,7 +16,6 @@
     <arg name="launch_local_planer" default="true"/>
     <arg name="launch_costmap" default="true"/>
     <arg name="launch_scripts" default="true"/>
-    <arg name="launch_interconnect" default="true"/>
     <arg name="launch_tasks" default="true"/>
     <arg name="launch_rviz" default="false"/>
 
@@ -87,12 +86,6 @@
             <arg name="start_x" value="$(arg start_x)"/>
             <arg name="start_y" value="$(arg start_y)"/>
             <arg name="start_theta" value="$(arg start_theta)"/>
-        </include>
-    </group>
-
-    <group if="$(arg launch_interconnect)">
-        <include file="$(find bigbang_eurobot)/launch/interconnect.launch">
-            <arg name="debug" value="$(arg debug)"/>
         </include>
     </group>
 
