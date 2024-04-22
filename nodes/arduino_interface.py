@@ -4,7 +4,7 @@ import roslib
 roslib.load_manifest('bigbang_eurobot')
 from dataclasses import dataclass, fields
 from typing import List, Tuple, Callable
-from functools import cache, partial
+from functools import partial
 import debugpy
 from geometry_msgs.msg import Point32
 from py_lib.imuimpl import ImuImpl, ImuSettings

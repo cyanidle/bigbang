@@ -111,20 +111,17 @@ class MoveTarget(BaseModel):
         return [str(self.x), str(self.y), str(self.theta)]
 
 class MoveBase(ScriptStep):
-    _last_target: MoveTarget = Field(default_factory=MoveTarget, repr=False)
+    last_target: MoveTarget = Field(default_factory=MoveTarget, repr=False)
     @property
     def is_move(self):
         return True
-    @property
-    def last_target(self) -> MoveTarget:
-        return self._last_target
 
 class Move(MoveBase):
     target: MoveTarget
     @ScriptStep.check_time
     def execute(self, data: ScriptData) -> bool:
         target = self.target
-        self._last_target = target
+        self.last_target = target
         ScriptsStates.move.publish(target.as_point)
         return ScriptsStates.wait_target_reached(data.params)
 
@@ -132,7 +129,7 @@ class InnateMove(MoveBase):
     @ScriptStep.check_time
     def execute(self, data: ScriptData) -> bool:
         target = MoveTarget.parse_obj(pop_to_named(data.msg.args, ("x", "y", "theta")))
-        self._last_target = target
+        self.last_target = target
         ScriptsStates.move.publish(target.as_point)
         return ScriptsStates.wait_target_reached(data.params)
 
